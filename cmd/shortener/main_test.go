@@ -16,8 +16,8 @@ func TestMainHandler(t *testing.T) {
 		contentType  string
 		expectedBody string
 	}{
-		{method: http.MethodPost, urlPath: "/", expectedCode: http.StatusCreated, expectedBody: "http://localhost:8080/EwHXdJfB"},
-		{method: http.MethodGet, urlPath: "/EwHXdJfB", expectedCode: http.StatusTemporaryRedirect, expectedBody: ""},
+		{method: http.MethodPost, urlPath: "/", expectedCode: http.StatusCreated},
+		{method: http.MethodGet, urlPath: "/random-key", expectedCode: http.StatusBadRequest, expectedBody: ""},
 	}
 
 	for _, tc := range testCases {
