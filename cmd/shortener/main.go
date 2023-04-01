@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+
+	"github.com/google/uuid"
 )
 
 var urlMap = make(map[string]string)
@@ -41,9 +43,10 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// тут должна быть функция которая создаёт это - EwHXdJfB
+// функция "сжимает" строку
 func shortenerURL(url string) string {
-	return "http://localhost:8080/EwHXdJfB"
+	id := uuid.New()
+	return "http://localhost:8080/" + id.String()
 }
 
 func GetURLHandle(w http.ResponseWriter, r *http.Request) {
