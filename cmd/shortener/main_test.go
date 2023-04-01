@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gogapopp/shortener/internal/app/handlers"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,7 +26,7 @@ func TestMainHandler(t *testing.T) {
 			r := httptest.NewRequest(tc.method, tc.urlPath, nil)
 			w := httptest.NewRecorder()
 
-			mainHandler(w, r)
+			handlers.MainHandler(w, r)
 
 			assert.Equal(t, tc.expectedCode, w.Code, "Код ответа не совпадает с ожидаемым")
 			if tc.expectedBody != "" {
