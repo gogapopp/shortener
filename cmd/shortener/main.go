@@ -22,22 +22,22 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprint(w, "Error reading request body")
 			panic(err)
 		}
-		mainUrl := string(body)
+		mainURL := string(body)
 		// делаем из обычной ссылки сжатую
-		shortURL := shortenerURL(mainUrl)
+		shortURL := shortenerURL(mainURL)
 		// получаем url path он новой сжатой ссылки /{id} и заполняем мапу
 		parsedURL, err := url.Parse(shortURL)
 		if err != nil {
 			panic(err)
 		}
-		urlMap[parsedURL.Path] = mainUrl
+		urlMap[parsedURL.Path] = mainURL
 		// отправляем ответ
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusCreated)
 		fmt.Fprint(w, shortURL)
 	} else {
 		// если r.URL.Path не "/" то выполняем
-		GetUrlHandle(w, r)
+		GetURLHandle(w, r)
 	}
 }
 
@@ -46,7 +46,7 @@ func shortenerURL(url string) string {
 	return "http://localhost:8080/EwHXdJfB"
 }
 
-func GetUrlHandle(w http.ResponseWriter, r *http.Request) {
+func GetURLHandle(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusBadRequest)
 		return
