@@ -26,7 +26,11 @@ func TestMainHandler(t *testing.T) {
 			r := httptest.NewRequest(tc.method, tc.urlPath, nil)
 			w := httptest.NewRecorder()
 
-			handlers.MainHandler(w, r)
+			if tc.method == http.MethodPost {
+				handlers.MainHandler(w, r)
+			} else if tc.method == http.MethodGet {
+				handlers.GetURLHandle(w, r)
+			}
 
 			assert.Equal(t, tc.expectedCode, w.Code, "Код ответа не совпадает с ожидаемым")
 			if tc.expectedBody != "" {
