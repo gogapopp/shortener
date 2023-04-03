@@ -1,14 +1,24 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/gogapopp/shortener/config"
 	"github.com/gogapopp/shortener/internal/app/handlers"
 )
 
+var BaseAddr string
+
 func main() {
+	flags := config.ParseFlags()
+
+	// передаём FlagBaseAddr в handlers.go (функция записывает значение в переменную которая находится в пакете handlers)
+	BaseAddr := flags.FlagBaseAddr
+	handlers.GetBaseAddr(BaseAddr)
+
 	r := chi.NewRouter()
 
 	r.Route("/", func(r chi.Router) {
@@ -17,5 +27,6 @@ func main() {
 			r.Get("/", handlers.GetURLHandle)
 		})
 	})
-	log.Fatal(http.ListenAndServe(":8080", r))
+	fmt.Println("Running server on", flags.FlagRunAddr)
+	log.Fatal(http.ListenAndServe(flags.FlagRunAddr, r))
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// todo refactor
 func TestMainHandler(t *testing.T) {
 	testCases := []struct {
 		urlPath      string

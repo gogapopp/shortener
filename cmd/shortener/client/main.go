@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// todo refactor
 func main() {
 	endpoint := "http://localhost:8080/"
 	// контейнер данных для запроса

@@ -23,6 +23,7 @@ func MainHandler(w http.ResponseWriter, r *http.Request) {
 	shortURL := shortenerURL(mainURL)
 	// получаем url path от новой сжатой ссылки /{id} и заполняем мапу
 	parsedURL, err := url.Parse(shortURL)
+	fmt.Print(parsedURL, shortURL)
 	if err != nil {
 		panic(err)
 	}
@@ -33,10 +34,18 @@ func MainHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, shortURL)
 }
 
+// сохраняем flags.FlagBaseAddr из main.go
+var baseAddr string
+
+func GetBaseAddr(str string) {
+	baseAddr = str
+}
+
 // функция "сжимает" строку
 func shortenerURL(url string) string {
 	id := uuid.New()
-	return "http://localhost:8080/" + id.String()
+	fmt.Println(baseAddr)
+	return baseAddr + id.String()
 }
 
 func GetURLHandle(w http.ResponseWriter, r *http.Request) {
