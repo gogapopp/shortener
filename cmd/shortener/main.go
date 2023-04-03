@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -27,6 +26,5 @@ func main() {
 			r.Get("/", handlers.GetURLHandle)
 		})
 	})
-	fmt.Println("Running server on", flags.FlagRunAddr)
 	log.Fatal(http.ListenAndServe(flags.FlagRunAddr, r))
 }

@@ -23,7 +23,6 @@ func MainHandler(w http.ResponseWriter, r *http.Request) {
 	shortURL := shortenerURL(mainURL)
 	// получаем url path от новой сжатой ссылки /{id} и заполняем мапу
 	parsedURL, err := url.Parse(shortURL)
-	fmt.Print(parsedURL, shortURL)
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +43,6 @@ func GetBaseAddr(str string) {
 // функция "сжимает" строку
 func shortenerURL(url string) string {
 	id := uuid.New()
-	fmt.Println(baseAddr)
 	return baseAddr + id.String()
 }
 
