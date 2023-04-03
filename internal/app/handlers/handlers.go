@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -40,10 +41,17 @@ func GetBaseAddr(str string) {
 	baseAddr = str
 }
 
-// функция "сжимает" строку
+// функция "сжимает" строку и возрващает айди
 func shortenerURL(url string) string {
 	id := uuid.New()
-	return baseAddr + id.String()
+	addres := baseAddr
+	if !strings.HasPrefix(baseAddr, "http://") {
+		addres = "http://" + addres
+	}
+	if !strings.HasSuffix(baseAddr, "/") {
+		addres = addres + "/"
+	}
+	return addres + id.String()
 }
 
 func GetURLHandle(w http.ResponseWriter, r *http.Request) {
