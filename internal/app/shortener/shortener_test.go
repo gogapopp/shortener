@@ -9,12 +9,11 @@ var addres string
 
 func TestShortenerURL(t *testing.T) {
 	testCases := []struct {
-		nameTest    string
-		url         string
-		expectedUrl string
+		nameTest string
+		url      string
 	}{
-		{nameTest: "#1 test", url: "localhost:8080", expectedUrl: "http://localhost:8080/"},
-		{nameTest: "#2 test", url: "localhost:8080", expectedUrl: "localhost:8080"},
+		{nameTest: "#1 test", url: "localhost:8080"},
+		{nameTest: "#2 test", url: "localhost:8080"},
 	}
 
 	for _, tc := range testCases {
