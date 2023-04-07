@@ -9,17 +9,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// todo refactor
-func TestMainHandler(t *testing.T) {
+func TestHandlers(t *testing.T) {
 	testCases := []struct {
 		urlPath      string
 		method       string
 		expectedCode int
-		contentType  string
 		expectedBody string
 	}{
 		{method: http.MethodPost, urlPath: "/", expectedCode: http.StatusCreated},
-		{method: http.MethodGet, urlPath: "/random-key", expectedCode: http.StatusBadRequest, expectedBody: ""},
+		{method: http.MethodGet, urlPath: "/unavailable-key", expectedCode: http.StatusBadRequest, expectedBody: ""},
 	}
 
 	for _, tc := range testCases {
@@ -28,9 +26,9 @@ func TestMainHandler(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			if tc.method == http.MethodPost {
-				handlers.MainHandler(w, r)
+				handlers.PostShortURL(w, r)
 			} else if tc.method == http.MethodGet {
-				handlers.GetURLHandle(w, r)
+				handlers.GetHandleURL(w, r)
 			}
 
 			assert.Equal(t, tc.expectedCode, w.Code, "Код ответа не совпадает с ожидаемым")

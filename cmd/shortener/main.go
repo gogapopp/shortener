@@ -8,11 +8,14 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/gogapopp/shortener/config"
 	"github.com/gogapopp/shortener/internal/app/handlers"
+	"github.com/gogapopp/shortener/internal/app/shortener"
 )
 
 var BaseAddr string
+var RunAddr string
 
-func main() {
+// init() инизиализирует переменные окружения переданные через flags
+func init() {
 	flags := config.ParseFlags()
 
 	if envRunAddr := os.Getenv("SERVER_ADDRESS"); envRunAddr != "" {
@@ -21,18 +24,24 @@ func main() {
 	if envBaseAddr := os.Getenv("BASE_URL"); envBaseAddr != "" {
 		flags.FlagBaseAddr = envBaseAddr
 	}
-
 	// передаём FlagBaseAddr в handlers.go (функция записывает значение в переменную которая находится в пакете handlers)
 	BaseAddr := flags.FlagBaseAddr
-	handlers.GetBaseAddr(BaseAddr)
+	shortener.GetBaseAddr(BaseAddr)
+	RunAddr = flags.FlagRunAddr
+}
 
+func main() {
+	RunServer()
+}
+
+// RunServer запускает сервер
+func RunServer() {
 	r := chi.NewRouter()
 
 	r.Route("/", func(r chi.Router) {
-		r.Post("/", handlers.MainHandler)
-		r.Route("/{id}", func(r chi.Router) {
-			r.Get("/", handlers.GetURLHandle)
-		})
+		r.Post("/", handlers.PostShortURL)
+		r.Get("/{id}", handlers.GetHandleURL)
 	})
-	log.Fatal(http.ListenAndServe(flags.FlagRunAddr, r))
+
+	log.Fatal(http.ListenAndServe(RunAddr, r))
 }
