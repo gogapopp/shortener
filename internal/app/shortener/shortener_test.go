@@ -19,11 +19,11 @@ func TestShortenerURL(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.nameTest, func(t *testing.T) {
-			resultUrl := ShortenerURL(tc.url)
-			if !strings.HasPrefix(resultUrl, "http://") {
+			resultURL := ShortenerURL(tc.url)
+			if !strings.HasPrefix(resultURL, "http://") {
 				addres = "http://" + "localhost:8080"
 			}
-			if !strings.HasSuffix(resultUrl, "/") {
+			if !strings.HasSuffix(resultURL, "/") {
 				addres = "localhost:8080" + "/"
 			}
 		})

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -14,8 +15,7 @@ import (
 var BaseAddr string
 var RunAddr string
 
-// init() инизиализирует переменные окружения переданные через flags
-func init() {
+func main() {
 	flags := config.ParseFlags()
 
 	if envRunAddr := os.Getenv("SERVER_ADDRESS"); envRunAddr != "" {
@@ -28,9 +28,8 @@ func init() {
 	BaseAddr := flags.FlagBaseAddr
 	shortener.GetBaseAddr(BaseAddr)
 	RunAddr = flags.FlagRunAddr
-}
 
-func main() {
+	fmt.Println("Running the server at", RunAddr)
 	RunServer()
 }
 
