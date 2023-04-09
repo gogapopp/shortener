@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/gogapopp/shortener/internal/app/shortener"
+	"github.com/gogapopp/shortener/internal/app/encryptor"
 )
 
 var urlMap = make(map[string]string)
@@ -22,7 +22,7 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 	}
 	mainURL := string(body)
 	// делаем из обычной ссылки сжатую
-	shortURL := shortener.ShortenerURL(mainURL)
+	shortURL := encryptor.ShortenerURL(mainURL)
 	// получаем url path от новой сжатой ссылки /{id} и заполняем мапу
 	parsedURL, err := url.Parse(shortURL)
 	if err != nil {

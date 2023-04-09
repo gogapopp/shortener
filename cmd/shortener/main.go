@@ -8,8 +8,8 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/gogapopp/shortener/config"
+	"github.com/gogapopp/shortener/internal/app/encryptor"
 	"github.com/gogapopp/shortener/internal/app/handlers"
-	"github.com/gogapopp/shortener/internal/app/shortener"
 )
 
 var BaseAddr string
@@ -26,7 +26,7 @@ func main() {
 	}
 	// передаём FlagBaseAddr в handlers.go (функция записывает значение в переменную которая находится в пакете handlers)
 	BaseAddr := flags.FlagBaseAddr
-	shortener.GetBaseAddr(BaseAddr)
+	encryptor.GetBaseAddr(BaseAddr)
 	RunAddr = flags.FlagRunAddr
 
 	fmt.Println("Running the server at", RunAddr)
