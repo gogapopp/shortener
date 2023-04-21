@@ -10,6 +10,7 @@ import (
 	"github.com/gogapopp/shortener/config"
 	"github.com/gogapopp/shortener/internal/app/encryptor"
 	"github.com/gogapopp/shortener/internal/app/handlers"
+	"github.com/gogapopp/shortener/internal/app/logger"
 )
 
 var BaseAddr string
@@ -35,11 +36,15 @@ func main() {
 
 // RunServer запускает сервер
 func RunServer() {
+	if err := logger.Initialize("Info"); err != nil {
+		log.Fatal(err)
+	}
+
 	r := chi.NewRouter()
 
 	r.Route("/", func(r chi.Router) {
-		r.Post("/", handlers.PostShortURL)
-		r.Get("/{id}", handlers.GetHandleURL)
+		r.Post("/", logger.RequestLogger(handlers.PostShortURL))
+		r.Get("/{id}", logger.ResponseLogger(handlers.GetHandleURL))
 	})
 
 	log.Fatal(http.ListenAndServe(RunAddr, r))
