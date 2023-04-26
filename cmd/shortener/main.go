@@ -45,6 +45,7 @@ func RunServer() {
 	r.Route("/", func(r chi.Router) {
 		r.Post("/", logger.RequestLogger(handlers.PostShortURL))
 		r.Get("/{id}", logger.ResponseLogger(handlers.GetHandleURL))
+		r.Post("/api/shorten", logger.RequestLogger(handlers.PostJSONHandler))
 	})
 
 	log.Fatal(http.ListenAndServe(RunAddr, r))
