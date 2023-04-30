@@ -1,4 +1,4 @@
-package gzip_middleware
+package middlewares
 
 import (
 	"net/http"
