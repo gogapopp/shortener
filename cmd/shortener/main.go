@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/gogapopp/shortener/config"
 	"github.com/gogapopp/shortener/internal/app/encryptor"
-	"github.com/gogapopp/shortener/internal/app/gzipMiddleware"
+	"github.com/gogapopp/shortener/internal/app/gzip_middleware"
 	"github.com/gogapopp/shortener/internal/app/handlers"
 	"github.com/gogapopp/shortener/internal/app/logger"
 )
@@ -44,9 +44,9 @@ func RunServer() {
 	r := chi.NewRouter()
 
 	r.Route("/", func(r chi.Router) {
-		r.Post("/", logger.RequestLogger(gzipMiddleware.GzipMiddleware(handlers.PostShortURL)))
-		r.Get("/{id}", logger.ResponseLogger(gzipMiddleware.GzipMiddleware(handlers.GetHandleURL)))
-		r.Post("/api/shorten", logger.RequestLogger(gzipMiddleware.GzipMiddleware(handlers.PostJSONHandler)))
+		r.Post("/", logger.RequestLogger(gzip_middleware.GzipMiddleware(handlers.PostShortURL)))
+		r.Get("/{id}", logger.ResponseLogger(gzip_middleware.GzipMiddleware(handlers.GetHandleURL)))
+		r.Post("/api/shorten", logger.RequestLogger(gzip_middleware.GzipMiddleware(handlers.PostJSONHandler)))
 	})
 
 	log.Fatal(http.ListenAndServe(RunAddr, r))
