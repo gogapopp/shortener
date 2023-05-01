@@ -74,5 +74,6 @@ func initializeServerConfig() {
 	// передаём в encryptor адрес
 	encryptor.GetBaseAddr(BaseAddr)
 	RunAddr = flags.FlagRunAddr
+	fmt.Println(flags.FlagStoragePath)
 	StoragePath = flags.FlagStoragePath
 }

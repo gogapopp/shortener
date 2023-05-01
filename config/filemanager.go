@@ -24,7 +24,7 @@ type ShortURL struct {
 var ShortURLStorage []ShortURL
 
 func CreateFile() {
-	file, err := os.OpenFile(pathStorage, os.O_RDWR|os.O_CREATE, 0666)
+	file, err := os.OpenFile("/tmp/"+pathStorage, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
