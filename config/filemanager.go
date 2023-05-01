@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"os"
-
-	"github.com/gogapopp/shortener/internal/app/logger"
 )
 
 var pathStorage string
@@ -26,8 +24,7 @@ type ShortURL struct {
 var ShortURLStorage []ShortURL
 
 func CreateFile() {
-	file, err := os.OpenFile("./tmp/"+pathStorage, os.O_RDWR|os.O_CREATE, 0666)
-	logger.GetPathStorage(pathStorage)
+	file, err := os.OpenFile(pathStorage, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}

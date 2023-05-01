@@ -90,7 +90,6 @@ func RequestLogger(h http.HandlerFunc) http.HandlerFunc {
 			zap.String("URL", r.Host),
 			zap.String("method", r.Method),
 			zap.Int64("duration", duration.Nanoseconds()),
-			zap.String("pathstring", pSathStorage),
 		)
 	})
 }

@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/go-chi/chi"
 	"github.com/gogapopp/shortener/config"
@@ -26,9 +25,6 @@ func main() {
 	if StoragePath == "" {
 		handlers.WriteToFile(false)
 	} else {
-		if !strings.HasPrefix(StoragePath, ".") {
-			StoragePath = "." + StoragePath
-		}
 		handlers.WriteToFile(true)
 		config.CreateFile()
 		config.Load()
