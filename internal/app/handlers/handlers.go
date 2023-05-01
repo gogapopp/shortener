@@ -39,8 +39,6 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 	// сохраняем значение в мапу
 	URLSMap[parsedURL.Path] = mainURL
 
-	fmt.Println(writeToFile)
-
 	// сохраняем в файл
 	if writeToFile {
 		config.UUIDCounter++
