@@ -18,13 +18,13 @@ func GetBaseAddr(str string) {
 func ShortenerURL(url string) string {
 	// получаем рандомный айди
 	id := uuid.New()
-	addres := baseAddr
+	address := baseAddr
 	// проверяем соответсвует ли строка формату http://example.ru/
 	if !strings.HasPrefix(baseAddr, "http://") {
-		addres = "http://" + addres
+		address = "http://" + address
 	}
 	if !strings.HasSuffix(baseAddr, "/") {
-		addres = addres + "/"
+		address = address + "/"
 	}
-	return addres + id.String()
+	return address + id.String()
 }

@@ -8,11 +8,17 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/gogapopp/shortener/config"
 	"github.com/gogapopp/shortener/internal/app/encryptor"
 	"github.com/gogapopp/shortener/internal/app/models"
 )
 
-var urlMap = make(map[string]string)
+var URLSMap = config.URLSMap
+var writeToFile bool
+
+func WriteToFile(b bool) {
+	writeToFile = b
+}
 
 // PostShortURL получает ссылку в body и присваивает ей уникальный ключ, значение хранит в мапе "key": "url"
 func PostShortURL(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +37,23 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	// сохраняем значение в мапу
-	urlMap[parsedURL.Path] = mainURL
+	URLSMap[parsedURL.Path] = mainURL
+
+	fmt.Println(writeToFile)
+
+	// сохраняем в файл
+	if writeToFile {
+		config.UUIDCounter++
+		config.ShortURLStorage = append(config.ShortURLStorage, config.ShortURL{
+			Uuid:        config.UUIDCounter,
+			ShortURL:    parsedURL.Path,
+			OriginalURL: URLSMap[parsedURL.Path],
+		})
+		if err := config.Save(); err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	// отправляем ответ
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
@@ -42,8 +64,8 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path
 	// проверяем есть ли значение в мапе
-	if _, ok := urlMap[id]; ok {
-		w.Header().Add("Location", urlMap[id])
+	if _, ok := URLSMap[id]; ok {
+		w.Header().Add("Location", URLSMap[id])
 		w.WriteHeader(http.StatusTemporaryRedirect)
 		return
 	} else {
@@ -67,11 +89,24 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	// сохраняем значение в мапу
-	urlMap[parsedURL.Path] = req.URL
+	URLSMap[parsedURL.Path] = req.URL
 
 	// передаём значение в ответ
 	var resp models.Response
 	resp.ShortURL = shortURL
+
+	// сохраняем в файл
+	if writeToFile {
+		config.UUIDCounter++
+		config.ShortURLStorage = append(config.ShortURLStorage, config.ShortURL{
+			Uuid:        config.UUIDCounter,
+			ShortURL:    parsedURL.Path,
+			OriginalURL: URLSMap[parsedURL.Path],
+		})
+		if err := config.Save(); err != nil {
+			log.Fatal(err)
+		}
+	}
 
 	// устанавливаем заголовок Content-Type и отправляем ответ
 	w.Header().Set("Content-Type", "application/json")

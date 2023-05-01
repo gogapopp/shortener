@@ -16,27 +16,28 @@ import (
 
 var BaseAddr string
 var RunAddr string
+var StoragePath string
 
 func main() {
-	flags := config.ParseFlags()
-
-	if envRunAddr := os.Getenv("SERVER_ADDRESS"); envRunAddr != "" {
-		flags.FlagRunAddr = envRunAddr
+	initializeServerConfig()
+	// передаём в config адрес сохранения файла
+	config.GetStoragePath(StoragePath)
+	if StoragePath == "" {
+		handlers.WriteToFile(false)
+	} else {
+		handlers.WriteToFile(true)
+		config.CreateFile()
+		config.Load()
+		config.RestoreURL()
 	}
-	if envBaseAddr := os.Getenv("BASE_URL"); envBaseAddr != "" {
-		flags.FlagBaseAddr = envBaseAddr
-	}
-	// передаём FlagBaseAddr в handlers.go (функция записывает значение в переменную которая находится в пакете handlers)
-	BaseAddr := flags.FlagBaseAddr
-	encryptor.GetBaseAddr(BaseAddr)
-	RunAddr = flags.FlagRunAddr
 
+	// запускаем сервер
 	fmt.Println("Running the server at", RunAddr)
-	RunServer()
+	runServer()
 }
 
 // RunServer запускает сервер
-func RunServer() {
+func runServer() {
 	if err := logger.Initialize("Info"); err != nil {
 		log.Fatal(err)
 	}
@@ -50,4 +51,24 @@ func RunServer() {
 	})
 
 	log.Fatal(http.ListenAndServe(RunAddr, r))
+}
+
+func initializeServerConfig() {
+	flags := config.ParseFlags()
+	// проверяем есть ли переменные окружения
+	if envRunAddr := os.Getenv("SERVER_ADDRESS"); envRunAddr != "" {
+		flags.FlagRunAddr = envRunAddr
+	}
+	if envBaseAddr := os.Getenv("BASE_URL"); envBaseAddr != "" {
+		flags.FlagBaseAddr = envBaseAddr
+	}
+	if envStoragePath := os.Getenv("FILE_STORAGE_PATHL"); envStoragePath != "" {
+		flags.FlagStoragePath = envStoragePath
+	}
+	// передаём FlagBaseAddr в handlers.go (функция записывает значение в переменную которая находится в пакете handlers)
+	BaseAddr := flags.FlagBaseAddr
+	// передаём в encryptor адрес
+	encryptor.GetBaseAddr(BaseAddr)
+	RunAddr = flags.FlagRunAddr
+	StoragePath = flags.FlagStoragePath
 }
