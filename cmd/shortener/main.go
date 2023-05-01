@@ -26,6 +26,9 @@ func main() {
 	if StoragePath == "" {
 		handlers.WriteToFile(false)
 	} else {
+		if !strings.HasPrefix(StoragePath, ".") {
+			StoragePath = "." + StoragePath
+		}
 		handlers.WriteToFile(true)
 		config.CreateFile()
 		config.Load()
@@ -72,7 +75,4 @@ func initializeServerConfig() {
 	encryptor.GetBaseAddr(BaseAddr)
 	RunAddr = flags.FlagRunAddr
 	StoragePath = flags.FlagStoragePath
-	if !strings.HasPrefix(StoragePath, ".") {
-		StoragePath = "." + StoragePath
-	}
 }
