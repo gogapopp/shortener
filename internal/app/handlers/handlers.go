@@ -45,7 +45,7 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 	if writeToFile {
 		config.UUIDCounter++
 		config.ShortURLStorage = append(config.ShortURLStorage, config.ShortURL{
-			Uuid:        config.UUIDCounter,
+			UUID:        config.UUIDCounter,
 			ShortURL:    parsedURL.Path,
 			OriginalURL: URLSMap[parsedURL.Path],
 		})
@@ -99,7 +99,7 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 	if writeToFile {
 		config.UUIDCounter++
 		config.ShortURLStorage = append(config.ShortURLStorage, config.ShortURL{
-			Uuid:        config.UUIDCounter,
+			UUID:        config.UUIDCounter,
 			ShortURL:    parsedURL.Path,
 			OriginalURL: URLSMap[parsedURL.Path],
 		})

@@ -16,7 +16,7 @@ func GetStoragePath(str string) {
 }
 
 type ShortURL struct {
-	Uuid        int    `json:"uuid"`
+	UUID        int    `json:"uuid"`
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 }
@@ -47,7 +47,7 @@ func Load() error {
 	if err := json.Unmarshal(data, &ShortURLStorage); err != nil {
 		return err
 	}
-	UUIDCounter = ShortURLStorage[len(ShortURLStorage)-1].Uuid
+	UUIDCounter = ShortURLStorage[len(ShortURLStorage)-1].UUID
 	return nil
 }
 

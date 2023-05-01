@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/go-chi/chi"
 	"github.com/gogapopp/shortener/config"
@@ -71,4 +72,7 @@ func initializeServerConfig() {
 	encryptor.GetBaseAddr(BaseAddr)
 	RunAddr = flags.FlagRunAddr
 	StoragePath = flags.FlagStoragePath
+	if !strings.HasPrefix(StoragePath, ".") {
+		StoragePath = "." + StoragePath
+	}
 }
