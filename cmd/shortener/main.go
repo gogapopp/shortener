@@ -66,7 +66,7 @@ func initializeServerConfig() {
 	if envBaseAddr := os.Getenv("BASE_URL"); envBaseAddr != "" {
 		flags.FlagBaseAddr = envBaseAddr
 	}
-	if envStoragePath := os.Getenv("FILE_STORAGE_PATHL"); envStoragePath != "" {
+	if envStoragePath := os.Getenv("FILE_STORAGE_PATH"); envStoragePath != "" {
 		flags.FlagStoragePath = envStoragePath
 	}
 	// передаём FlagBaseAddr в handlers.go (функция записывает значение в переменную которая находится в пакете handlers)
