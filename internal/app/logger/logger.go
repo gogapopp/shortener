@@ -73,6 +73,12 @@ func ResponseLogger(h http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
+var pSathStorage string
+
+func GetPathStorage(path string) {
+	pSathStorage = path
+}
+
 // RequestLogger логирует POST запрос
 func RequestLogger(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -84,6 +90,7 @@ func RequestLogger(h http.HandlerFunc) http.HandlerFunc {
 			zap.String("URL", r.Host),
 			zap.String("method", r.Method),
 			zap.Int64("duration", duration.Nanoseconds()),
+			zap.String("pathstring", pSathStorage),
 		)
 	})
 }
