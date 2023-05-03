@@ -12,6 +12,7 @@ import (
 	"github.com/gogapopp/shortener/internal/app/handlers"
 	"github.com/gogapopp/shortener/internal/app/logger"
 	"github.com/gogapopp/shortener/internal/app/middlewares"
+	"github.com/gogapopp/shortener/internal/app/storage"
 )
 
 var BaseAddr string
@@ -20,15 +21,15 @@ var StoragePath string
 
 func main() {
 	initializeServerConfig()
-	// передаём в config адрес сохранения файла
-	config.GetStoragePath(StoragePath)
+	// передаём в filemanager адрес сохранения файла
+	storage.GetStoragePath(StoragePath)
 	if StoragePath == "" {
 		handlers.WriteToFile(false)
 	} else {
 		handlers.WriteToFile(true)
-		config.CreateFile()
-		config.Load()
-		config.RestoreURL()
+		storage.CreateFile()
+		storage.Load()
+		storage.RestoreURL()
 	}
 
 	// запускаем сервер
@@ -36,18 +37,17 @@ func main() {
 	runServer()
 }
 
-// RunServer запускает сервер
+// RunServer() запускает сервер и инициализирует логер
 func runServer() {
 	if err := logger.Initialize("Info"); err != nil {
 		log.Fatal(err)
 	}
-
 	r := chi.NewRouter()
 
 	r.Route("/", func(r chi.Router) {
 		r.Post("/", logger.RequestLogger(middlewares.GzipMiddleware(handlers.PostShortURL)))
 		r.Get("/{id}", logger.ResponseLogger(middlewares.GzipMiddleware(handlers.GetHandleURL)))
-		r.Post("/api/shorten", logger.RequestLogger(middlewares.GzipMiddleware(handlers.PostJSONHandler)))
+		r.Post("/api/shorten", logger.RequestJSONLogger(middlewares.GzipMiddleware(handlers.PostJSONHandler)))
 	})
 
 	log.Fatal(http.ListenAndServe(RunAddr, r))

@@ -10,6 +10,7 @@ type Flags struct {
 	FlagStoragePath string
 }
 
+// ParseFlags() парсит флаги при запуске программы
 func ParseFlags() *Flags {
 	f := &Flags{}
 	flag.StringVar(&f.FlagRunAddr, "a", "localhost:8080", "address and port to run server")

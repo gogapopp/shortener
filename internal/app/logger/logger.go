@@ -1,9 +1,14 @@
 package logger
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 
+	"github.com/gogapopp/shortener/internal/app/models"
 	"go.uber.org/zap"
 )
 
@@ -51,7 +56,7 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.responseData.status = statusCode
 }
 
-// RequestLogger логирует GET запрос
+// RequestLogger() логирует GET запрос
 func ResponseLogger(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		responseData := &responseData{
@@ -73,23 +78,56 @@ func ResponseLogger(h http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
-var pSathStorage string
-
-func GetPathStorage(path string) {
-	pSathStorage = path
-}
-
-// RequestLogger логирует POST запрос
+// RequestLogger() логирует POST запрос
 func RequestLogger(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
+
+		// читаем боди запоса
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// возвращаем данные обратно
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
 		h(w, r)
 		duration := time.Since(start)
-
 		Log.Info("POST request",
 			zap.String("URL", r.Host),
 			zap.String("method", r.Method),
 			zap.Int64("duration", duration.Nanoseconds()),
+			zap.String("body", string(body)),
+		)
+	})
+}
+
+// RequestLogger() логирует POST json запрос
+func RequestJSONLogger(h http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		// читаем боди запоса
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// декодируем json чтоб выводить строку в логи без лишних пробелов
+		var b models.Request
+		err = json.Unmarshal([]byte(body), &b)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// возвращаем данные обратно
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+		h(w, r)
+		duration := time.Since(start)
+		Log.Info("POST request",
+			zap.String("URL", r.Host),
+			zap.String("method", r.Method),
+			zap.Int64("duration", duration.Nanoseconds()),
+			zap.String("body", b.URL),
 		)
 	})
 }

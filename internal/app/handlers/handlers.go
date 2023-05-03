@@ -8,12 +8,12 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/gogapopp/shortener/config"
 	"github.com/gogapopp/shortener/internal/app/encryptor"
 	"github.com/gogapopp/shortener/internal/app/models"
+	"github.com/gogapopp/shortener/internal/app/storage"
 )
 
-var URLSMap = config.URLSMap
+var URLSMap = storage.URLSMap
 var writeToFile bool
 
 func WriteToFile(b bool) {
@@ -31,6 +31,12 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 	mainURL := string(body)
 	// делаем из обычной ссылки сжатую
 	shortURL := encryptor.ShortenerURL(mainURL)
+	// проверяем имеет ли body в себе url ссылку
+	_, err = url.ParseRequestURI(mainURL)
+	if err != nil {
+		http.Error(w, "Invalid URL", http.StatusBadRequest)
+		return
+	}
 	// получаем url path от новой сжатой ссылки /{id} и заполняем мапу
 	parsedURL, err := url.Parse(shortURL)
 	if err != nil {
@@ -41,13 +47,13 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 
 	// сохраняем в файл
 	if writeToFile {
-		config.UUIDCounter++
-		config.ShortURLStorage = append(config.ShortURLStorage, config.ShortURL{
-			UUID:        config.UUIDCounter,
+		storage.UUIDCounter++
+		storage.ShortURLStorage = append(storage.ShortURLStorage, models.ShortURL{
+			UUID:        storage.UUIDCounter,
 			ShortURL:    parsedURL.Path,
 			OriginalURL: URLSMap[parsedURL.Path],
 		})
-		if err := config.Save(); err != nil {
+		if err := storage.Save(); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -67,7 +73,7 @@ func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusTemporaryRedirect)
 		return
 	} else {
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, "Link does not exist", http.StatusBadRequest)
 	}
 }
 
@@ -79,7 +85,13 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error decoding request body", http.StatusMethodNotAllowed)
 		return
 	}
-
+	// проверяем имеет ли body в себе url ссылку
+	_, err := url.ParseRequestURI(req.URL)
+	if err != nil {
+		http.Error(w, "Invalid URL", http.StatusBadRequest)
+		return
+	}
+	// "сжимаем" строку
 	shortURL := encryptor.ShortenerURL(req.URL)
 	// получаем url path от новой сжатой ссылки /{id} и заполняем мапу
 	parsedURL, err := url.Parse(shortURL)
@@ -95,13 +107,13 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 	// сохраняем в файл
 	if writeToFile {
-		config.UUIDCounter++
-		config.ShortURLStorage = append(config.ShortURLStorage, config.ShortURL{
-			UUID:        config.UUIDCounter,
+		storage.UUIDCounter++
+		storage.ShortURLStorage = append(storage.ShortURLStorage, models.ShortURL{
+			UUID:        storage.UUIDCounter,
 			ShortURL:    parsedURL.Path,
 			OriginalURL: URLSMap[parsedURL.Path],
 		})
-		if err := config.Save(); err != nil {
+		if err := storage.Save(); err != nil {
 			log.Fatal(err)
 		}
 	}

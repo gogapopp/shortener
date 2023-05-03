@@ -1,28 +1,25 @@
-package config
+package storage
 
 import (
 	"encoding/json"
 	"log"
 	"os"
+
+	"github.com/gogapopp/shortener/internal/app/models"
 )
 
 var pathStorage string
 var UUIDCounter int
 var URLSMap = make(map[string]string)
 
-// принимает значение path storage из main
+var ShortURLStorage []models.ShortURL
+
+// GetStoragePath(str string) принимает значение path storage из main
 func GetStoragePath(str string) {
 	pathStorage = str
 }
 
-type ShortURL struct {
-	UUID        int    `json:"uuid"`
-	ShortURL    string `json:"short_url"`
-	OriginalURL string `json:"original_url"`
-}
-
-var ShortURLStorage []ShortURL
-
+// CreateFile() создаёт файл с названием из pathStorage
 func CreateFile() {
 	file, err := os.OpenFile(pathStorage, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
@@ -31,6 +28,7 @@ func CreateFile() {
 	defer file.Close()
 }
 
+// Save() записывает поля json из стуктуры ShortURLStorage в файл
 func Save() error {
 	data, err := json.MarshalIndent(ShortURLStorage, "", "   ")
 	if err != nil {
@@ -39,6 +37,7 @@ func Save() error {
 	return os.WriteFile(pathStorage, data, 0666)
 }
 
+// Load() читает файл с сохранёнными ссылками и записываем в структуру ShortURLStorage
 func Load() error {
 	data, err := os.ReadFile(pathStorage)
 	if err != nil {
@@ -51,6 +50,7 @@ func Load() error {
 	return nil
 }
 
+// RestoreURL() записывает данные из структуры ShortURLStorage в мапу URLSMap
 func RestoreURL() {
 	for _, urls := range ShortURLStorage {
 		URLSMap[urls.ShortURL] = urls.OriginalURL
