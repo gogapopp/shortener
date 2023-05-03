@@ -3,6 +3,7 @@ package logger
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -84,12 +85,12 @@ func RequestLogger(h http.HandlerFunc) http.HandlerFunc {
 		start := time.Now()
 
 		// читаем боди запоса
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			log.Fatal(err)
 		}
 		// возвращаем данные обратно
-		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		r.Body = io.NopCloser(bytes.NewBuffer(body))
 
 		h(w, r)
 		duration := time.Since(start)
