@@ -21,10 +21,13 @@ var StoragePath string
 var DatabaseDSN string
 
 func main() {
+	// парсим флаги и env
 	initializeServerConfig()
-	// инициализируем базу данных и передаём значение запуска базы данных в пакет storage
-	storage.InitializeDatabase(DatabaseDSN)
-	fmt.Println(DatabaseDSN)
+	if DatabaseDSN != "" {
+		// инициализируем базу данных и передаём значение запуска базы данных в пакет storage
+		fmt.Println(DatabaseDSN)
+		storage.InitializeDatabase(DatabaseDSN)
+	}
 	// передаём в filemanager адрес сохранения файла
 	storage.GetStoragePath(StoragePath)
 	if StoragePath == "" {

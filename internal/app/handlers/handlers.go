@@ -66,6 +66,10 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 
 // GetPingDatabase пингует PostgreSQL
 func GetPingDatabase(w http.ResponseWriter, r *http.Request) {
+	if db := storage.DB(); db == nil {
+		http.Error(w, "База данных не инициализирована", http.StatusInternalServerError)
+		return
+	}
 	if err := storage.DB().Ping(); err != nil {
 		http.Error(w, "Ошибка подключения к базе данных", http.StatusInternalServerError)
 		return
