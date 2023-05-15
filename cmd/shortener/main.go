@@ -23,13 +23,14 @@ var DatabaseDSN string
 func main() {
 	// парсим флаги и env
 	initializeServerConfig()
+	// проверяем есть ли значения подключения к базе данных
 	if DatabaseDSN != "" {
 		// инициализируем базу данных и передаём значение запуска базы данных в пакет storage
-		fmt.Println(DatabaseDSN)
 		storage.InitializeDatabase(DatabaseDSN)
 	}
 	// передаём в filemanager адрес сохранения файла
 	storage.GetStoragePath(StoragePath)
+	// проверяем есть ли путь сохранения файлов записи
 	if StoragePath == "" {
 		handlers.WriteToFile(false)
 	} else {

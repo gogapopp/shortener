@@ -12,6 +12,7 @@ import (
 var db *sql.DB
 var err error
 
+// InitializeDatabase инициализирует базу данных если значение dsn не пустое
 func InitializeDatabase(dsn string) {
 	db, err = sql.Open("pgx", dsn)
 	if err != nil {
@@ -25,6 +26,7 @@ func InitializeDatabase(dsn string) {
 	}
 }
 
+// DB возвращает значение *sql.DB
 func DB() *sql.DB {
 	return db
 }
