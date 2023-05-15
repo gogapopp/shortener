@@ -64,6 +64,15 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, shortURL)
 }
 
+// GetPingDatabase пингует PostgreSQL
+func GetPingDatabase(w http.ResponseWriter, r *http.Request) {
+	if err := storage.DB().Ping(r.Context()); err != nil {
+		http.Error(w, "Ошибка подключения к базе данных", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
 // GetHandleURL проверяет валидная ссылка или нет, если валидная то редиректит по адрессу
 func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path

@@ -47,6 +47,7 @@ func runServer() {
 	r.Route("/", func(r chi.Router) {
 		r.Post("/", logger.RequestLogger(middlewares.GzipMiddleware(handlers.PostShortURL)))
 		r.Get("/{id}", logger.ResponseLogger(middlewares.GzipMiddleware(handlers.GetHandleURL)))
+		r.Get("/ping", logger.ResponseLogger(handlers.GetPingDatabase))
 		r.Post("/api/shorten", logger.RequestJSONLogger(middlewares.GzipMiddleware(handlers.PostJSONHandler)))
 	})
 
@@ -65,6 +66,9 @@ func initializeServerConfig() {
 	if envStoragePath := os.Getenv("FILE_STORAGE_PATH"); envStoragePath != "" {
 		flags.FlagStoragePath = envStoragePath
 	}
+	if envDatabasePath := os.Getenv("FILE_STORAGE_PATH"); envDatabasePath != "" {
+		flags.FlagDatabasePath = envDatabasePath
+	}
 	// передаём FlagBaseAddr в handlers.go (функция записывает значение в переменную которая находится в пакете handlers)
 	BaseAddr := flags.FlagBaseAddr
 	// передаём в encryptor адрес
@@ -72,4 +76,6 @@ func initializeServerConfig() {
 	RunAddr = flags.FlagRunAddr
 	fmt.Println(flags.FlagStoragePath)
 	StoragePath = flags.FlagStoragePath
+	// инициализируем базу данных и передаём значение запуска базы данных в пакет storage
+	storage.InitializeDatabase(flags.FlagDatabasePath)
 }
