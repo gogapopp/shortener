@@ -18,7 +18,7 @@ func InitializeDatabase(dsn string) {
 		log.Fatal(err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err = db.PingContext(ctx); err != nil {
 		log.Fatal(err)

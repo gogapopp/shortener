@@ -18,9 +18,13 @@ import (
 var BaseAddr string
 var RunAddr string
 var StoragePath string
+var DatabaseDSN string
 
 func main() {
 	initializeServerConfig()
+	// инициализируем базу данных и передаём значение запуска базы данных в пакет storage
+	storage.InitializeDatabase(DatabaseDSN)
+	fmt.Println(DatabaseDSN)
 	// передаём в filemanager адрес сохранения файла
 	storage.GetStoragePath(StoragePath)
 	if StoragePath == "" {
@@ -74,8 +78,6 @@ func initializeServerConfig() {
 	// передаём в encryptor адрес
 	encryptor.GetBaseAddr(BaseAddr)
 	RunAddr = flags.FlagRunAddr
-	fmt.Println(flags.FlagStoragePath)
 	StoragePath = flags.FlagStoragePath
-	// инициализируем базу данных и передаём значение запуска базы данных в пакет storage
-	storage.InitializeDatabase(flags.FlagDatabasePath)
+	DatabaseDSN = flags.FlagDatabasePath
 }
