@@ -6,12 +6,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/go-chi/chi"
 	"github.com/gogapopp/shortener/config"
 	"github.com/gogapopp/shortener/internal/app/encryptor"
 	"github.com/gogapopp/shortener/internal/app/handlers"
-	"github.com/gogapopp/shortener/internal/app/logger"
-	"github.com/gogapopp/shortener/internal/app/middlewares"
+	"github.com/gogapopp/shortener/internal/app/routes"
 	"github.com/gogapopp/shortener/internal/app/storage"
 )
 
@@ -42,23 +40,7 @@ func main() {
 
 	// запускаем сервер
 	fmt.Println("Running the server at", RunAddr)
-	runServer()
-}
-
-// RunServer() запускает сервер и инициализирует логер
-func runServer() {
-	if err := logger.Initialize("Info"); err != nil {
-		log.Fatal(err)
-	}
-	r := chi.NewRouter()
-
-	r.Route("/", func(r chi.Router) {
-		r.Post("/", logger.RequestLogger(middlewares.GzipMiddleware(handlers.PostShortURL)))
-		r.Get("/{id}", logger.ResponseLogger(middlewares.GzipMiddleware(handlers.GetHandleURL)))
-		r.Get("/ping", logger.ResponseLogger(handlers.GetPingDatabase))
-		r.Post("/api/shorten", logger.RequestJSONLogger(middlewares.GzipMiddleware(handlers.PostJSONHandler)))
-	})
-
+	r := routes.Routes()
 	log.Fatal(http.ListenAndServe(RunAddr, r))
 }
 
