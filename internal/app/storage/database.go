@@ -2,21 +2,29 @@ package storage
 
 import (
 	"context"
+	"database/sql"
 	"log"
+	"time"
 
-	"github.com/jackc/pgx/v4"
+	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
-var db *pgx.Conn
+var db *sql.DB
 var err error
 
 func InitializeDatabase(dsn string) {
-	db, err = pgx.Connect(context.Background(), dsn)
+	db, err = sql.Open("pgx", dsn)
 	if err != nil {
+		log.Fatal(err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	if err = db.PingContext(ctx); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func DB() *pgx.Conn {
+func DB() *sql.DB {
 	return db
 }
