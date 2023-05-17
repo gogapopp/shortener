@@ -167,18 +167,15 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 	var req []models.BatchRequest
 	var resp []models.BatchResponse
-	if len(req) == 0 {
-		http.Error(w, "error decoding request body", http.StatusNotFound)
-		return
-	}
 	if writeToDatabase {
 		ctx := r.Context()
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, "error decoding request body", http.StatusMethodNotAllowed)
 			return
 		}
+
 		// начинаем проходить по реквесту
-		for k, _ := range req {
+		for k := range req {
 			// проверяем является ли переданное значение ссылкой
 			_, err := url.ParseRequestURI(req[k].OriginalURL)
 			if err != nil {
@@ -209,7 +206,7 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if writeToFile {
-		for k, _ := range req {
+		for k := range req {
 			// проверяем является ли переданное значение ссылкой
 			_, err := url.ParseRequestURI(req[k].OriginalURL)
 			if err != nil {
