@@ -14,14 +14,19 @@ import (
 )
 
 var URLSMap = storage.URLSMap
-var writeToFile bool
+var writeToFile bool = false
+var writeToDatabase bool = false
 
 func WriteToFile(b bool) {
 	writeToFile = b
 }
+func WriteToDatabase(c bool) {
+	writeToDatabase = c
+}
 
 // PostShortURL получает ссылку в body и присваивает ей уникальный ключ, значение хранит в мапе "key": "url"
 func PostShortURL(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	// читаем тело реквеста
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -45,6 +50,14 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 	// сохраняем значение в мапу
 	URLSMap[parsedURL.Path] = mainURL
 
+	// сохраняем в базу данных
+	if writeToDatabase {
+		// делаем запись в виде id (primary key), short_url, long_url
+		err := storage.InsertURL(ctx, parsedURL.Path, URLSMap[parsedURL.Path])
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	// сохраняем в файл
 	if writeToFile {
 		storage.UUIDCounter++

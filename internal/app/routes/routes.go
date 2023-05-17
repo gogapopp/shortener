@@ -9,7 +9,7 @@ import (
 	"github.com/gogapopp/shortener/internal/app/middlewares"
 )
 
-// Routes запускает сервер и инициализирует логер
+// Routes инициализирует логгер и реализует роуты сервера
 func Routes() *chi.Mux {
 	if err := logger.Initialize("Info"); err != nil {
 		log.Fatal(err)

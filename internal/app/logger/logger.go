@@ -56,7 +56,7 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.responseData.status = statusCode
 }
 
-// RequestLogger() логирует GET запрос
+// RequestLogger логирует GET запрос
 func ResponseLogger(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		responseData := &responseData{
@@ -78,7 +78,7 @@ func ResponseLogger(h http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
-// RequestLogger() логирует POST запрос
+// RequestLogger логирует POST запрос
 func RequestLogger(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -102,7 +102,7 @@ func RequestLogger(h http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
-// RequestLogger() логирует POST json запрос
+// RequestLogger логирует POST json запрос
 func RequestJSONLogger(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
