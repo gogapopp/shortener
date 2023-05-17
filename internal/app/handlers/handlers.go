@@ -53,7 +53,7 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 	// сохраняем в базу данных
 	if writeToDatabase {
 		// делаем запись в виде id (primary key), short_url, long_url
-		err := storage.InsertURL(ctx, parsedURL.Path, URLSMap[parsedURL.Path])
+		err := storage.InsertURL(ctx, parsedURL.Path, URLSMap[parsedURL.Path], "")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -105,6 +105,7 @@ func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 
 // PostJSONHandler принимает url: url и возвращает result: shortUrl
 func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	// декодируем данные из тела запроса
 	var req models.Request
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -131,6 +132,15 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 	var resp models.Response
 	resp.ShortURL = shortURL
 
+	// сохраняем в базу данных
+	if writeToDatabase {
+		// делаем запись в виде id (primary key), short_url, long_url
+		err := storage.InsertURL(ctx, shortURL, req.URL, "")
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	// сохраняем в файл
 	if writeToFile {
 		storage.UUIDCounter++
@@ -141,6 +151,89 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		if err := storage.Save(); err != nil {
 			log.Fatal(err)
+		}
+	}
+
+	// устанавливаем заголовок Content-Type и отправляем ответ
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
+}
+
+// PostBatchJSONhHandler
+func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
+	var req []models.BatchRequest
+	var resp []models.BatchResponse
+	if len(req) == 0 {
+		http.Error(w, "error decoding request body", http.StatusNotFound)
+		return
+	}
+	if writeToDatabase {
+		ctx := r.Context()
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "error decoding request body", http.StatusMethodNotAllowed)
+			return
+		}
+		// начинаем проходить по реквесту
+		for k, _ := range req {
+			// проверяем является ли переданное значение ссылкой
+			_, err := url.ParseRequestURI(req[k].OriginalURL)
+			if err != nil {
+				http.Error(w, "Invalid URL", http.StatusBadRequest)
+				return
+			}
+			// "сжимаем" ссылку
+			shortURL := encryptor.ShortenerURL(req[k].OriginalURL)
+			// получаем url path от новой сжатой ссылки /{id} и заполняем мапу
+			parsedURL, err := url.Parse(shortURL)
+			if err != nil {
+				log.Fatal(err)
+			}
+			// сохраняем значение в мапу
+			URLSMap[parsedURL.Path] = req[k].OriginalURL
+			// делаем запись в базу данных
+			if err := storage.InsertURL(ctx, shortURL, req[k].OriginalURL, req[k].CorrelationID); err != nil {
+				fmt.Println(err)
+				http.Error(w, "error insert to database", http.StatusMethodNotAllowed)
+				return
+			}
+
+			resp = append(resp, models.BatchResponse{
+				ShortURL:      shortURL,
+				CorrelationID: req[k].CorrelationID,
+			})
+		}
+	}
+
+	if writeToFile {
+		for k, _ := range req {
+			// проверяем является ли переданное значение ссылкой
+			_, err := url.ParseRequestURI(req[k].OriginalURL)
+			if err != nil {
+				http.Error(w, "Invalid URL", http.StatusBadRequest)
+				return
+			}
+			// "сжимаем" ссылку
+			shortURL := encryptor.ShortenerURL(req[k].OriginalURL)
+			// получаем url path от новой сжатой ссылки /{id} и заполняем мапу
+			parsedURL, err := url.Parse(shortURL)
+			if err != nil {
+				log.Fatal(err)
+			}
+			// сохраняем значение в мапу
+			URLSMap[parsedURL.Path] = req[k].OriginalURL
+			storage.UUIDCounter++
+			storage.ShortURLStorage = append(storage.ShortURLStorage, models.ShortURL{
+				UUID:        storage.UUIDCounter,
+				ShortURL:    parsedURL.Path,
+				OriginalURL: URLSMap[parsedURL.Path],
+			})
+			if err := storage.Save(); err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 

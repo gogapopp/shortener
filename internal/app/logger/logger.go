@@ -102,7 +102,7 @@ func RequestLogger(h http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
-// RequestLogger логирует POST json запрос
+// RequestJSONLogger логирует POST json запрос
 func RequestJSONLogger(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -128,6 +128,35 @@ func RequestJSONLogger(h http.HandlerFunc) http.HandlerFunc {
 			zap.String("method", r.Method),
 			zap.Int64("duration", duration.Nanoseconds()),
 			zap.String("body", b.URL),
+		)
+	})
+}
+
+// RequestBatchJSONLogger логирует POST json запрос
+func RequestBatchJSONLogger(h http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		// читаем боди запоса
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// декодируем json чтоб выводить строку в логи без лишних пробелов
+		var b []models.BatchRequest
+		err = json.Unmarshal([]byte(body), &b)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// возвращаем данные обратно
+		r.Body = io.NopCloser(bytes.NewBuffer(body))
+
+		h(w, r)
+		duration := time.Since(start)
+		Log.Info("POST request",
+			zap.String("URL", r.Host),
+			zap.String("method", r.Method),
+			zap.Int64("duration", duration.Nanoseconds()),
 		)
 	})
 }

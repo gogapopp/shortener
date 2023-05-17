@@ -20,6 +20,7 @@ func Routes() *chi.Mux {
 		r.Post("/", logger.RequestLogger(middlewares.GzipMiddleware(handlers.PostShortURL)))
 		r.Get("/{id}", logger.ResponseLogger(middlewares.GzipMiddleware(handlers.GetHandleURL)))
 		r.Get("/ping", logger.ResponseLogger(handlers.GetPingDatabase))
+		r.Post("/api/shorten/batch", logger.RequestBatchJSONLogger(middlewares.GzipMiddleware(handlers.PostBatchJSONhHandler)))
 		r.Post("/api/shorten", logger.RequestJSONLogger(middlewares.GzipMiddleware(handlers.PostJSONHandler)))
 	})
 
