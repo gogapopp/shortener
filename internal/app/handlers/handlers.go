@@ -27,6 +27,7 @@ func WriteToDatabase(c bool) {
 
 // PostShortURL получает ссылку в body и присваивает ей уникальный ключ, значение хранит в мапе "key": "url"
 func PostShortURL(w http.ResponseWriter, r *http.Request) {
+	var responseHeader = 201
 	ctx := r.Context()
 	// читаем тело реквеста
 	body, err := io.ReadAll(r.Body)
@@ -57,9 +58,11 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 		err := storage.InsertURL(ctx, parsedURL.Path, URLSMap[parsedURL.Path], "")
 		if err != nil {
 			if errors.Is(err, storage.ErrConflict) {
+				// shortURL := storage.FindShortURL(ctx, mainURL)
+				responseHeader = 409
 				w.Header().Set("Content-Type", "text/plain")
-				w.WriteHeader(http.StatusCreated)
-				fmt.Fprint(w, shortURL)
+				w.WriteHeader(responseHeader)
+				fmt.Fprint(w, string(body))
 				return
 			} else {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -82,7 +85,7 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 
 	// отправляем ответ
 	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(responseHeader)
 	fmt.Fprint(w, shortURL)
 }
 
