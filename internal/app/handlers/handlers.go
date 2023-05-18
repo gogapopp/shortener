@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -55,7 +56,15 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 		// делаем запись в виде id (primary key), short_url, long_url
 		err := storage.InsertURL(ctx, parsedURL.Path, URLSMap[parsedURL.Path], "")
 		if err != nil {
-			log.Fatal(err)
+			if errors.Is(err, storage.ErrConflict) {
+				w.Header().Set("Content-Type", "text/plain")
+				w.WriteHeader(http.StatusCreated)
+				fmt.Fprint(w, shortURL)
+				return
+			} else {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 	}
 	// сохраняем в файл
@@ -105,6 +114,7 @@ func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 
 // PostJSONHandler принимает url: url и возвращает result: shortUrl
 func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
+	var responseHeader = 201
 	ctx := r.Context()
 	// декодируем данные из тела запроса
 	var req models.Request
@@ -127,7 +137,6 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// сохраняем значение в мапу
 	URLSMap[parsedURL.Path] = req.URL
-
 	// передаём значение в ответ
 	var resp models.Response
 	resp.ShortURL = shortURL
@@ -137,7 +146,14 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 		// делаем запись в виде id (primary key), short_url, long_url
 		err := storage.InsertURL(ctx, shortURL, req.URL, "")
 		if err != nil {
-			log.Fatal(err)
+			if errors.Is(err, storage.ErrConflict) {
+				responseHeader = 409
+				shortURL := storage.FindShortURL(ctx, req.URL)
+				resp.ShortURL = shortURL
+			} else {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 	}
 
@@ -156,7 +172,7 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 	// устанавливаем заголовок Content-Type и отправляем ответ
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(responseHeader)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 		return
@@ -165,6 +181,7 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 // PostBatchJSONhHandler
 func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
+	var responseHeader = 201
 	var req []models.BatchRequest
 	var resp []models.BatchResponse
 	if writeToDatabase {
@@ -183,23 +200,28 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			// "сжимаем" ссылку
-			shortURL := encryptor.ShortenerURL(req[k].OriginalURL)
+			BatchShortURL := encryptor.ShortenerURL(req[k].OriginalURL)
 			// получаем url path от новой сжатой ссылки /{id} и заполняем мапу
-			parsedURL, err := url.Parse(shortURL)
+			parsedURL, err := url.Parse(BatchShortURL)
 			if err != nil {
 				log.Fatal(err)
 			}
 			// сохраняем значение в мапу
 			URLSMap[parsedURL.Path] = req[k].OriginalURL
 			// делаем запись в базу данных
-			if err := storage.InsertURL(ctx, shortURL, req[k].OriginalURL, req[k].CorrelationID); err != nil {
-				fmt.Println(err)
-				http.Error(w, "error insert to database", http.StatusMethodNotAllowed)
-				return
+			if err := storage.InsertURL(ctx, BatchShortURL, req[k].OriginalURL, req[k].CorrelationID); err != nil {
+				if errors.Is(err, storage.ErrConflict) {
+					responseHeader = 409
+					shortURL := storage.FindShortURL(ctx, req[k].OriginalURL)
+					BatchShortURL = shortURL
+				} else {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
 			}
 
 			resp = append(resp, models.BatchResponse{
-				ShortURL:      shortURL,
+				ShortURL:      BatchShortURL,
 				CorrelationID: req[k].CorrelationID,
 			})
 		}
@@ -236,7 +258,7 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 
 	// устанавливаем заголовок Content-Type и отправляем ответ
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(responseHeader)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 		return
