@@ -44,16 +44,27 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid URL", http.StatusBadRequest)
 		return
 	}
-
+	// получаем url path от новой сжатой ссылки /{id} и заполняем мапу
+	parsedURL, err := url.Parse(shortURL)
+	if err != nil {
+		log.Fatal(err)
+	}
 	// сохраняем значение в мапу
-	URLSMap[shortURL] = mainURL
-
+	URLSMap[parsedURL.Path] = mainURL
+	// получаем request адресс с которого происходит запрос
+	host := r.Host
+	scheme := "http"
+	if r.TLS != nil {
+		scheme = "https"
+	}
+	requestURL := fmt.Sprintf("%s://%s", scheme, host)
 	// сохраняем в базу данных
 	if writeToDatabase {
 		// делаем запись в виде id (primary key), short_url, long_url
-		err := storage.InsertURL(ctx, shortURL, URLSMap[shortURL], "")
+		err := storage.InsertURL(ctx, requestURL+parsedURL.Path, URLSMap[parsedURL.Path], "")
 		if err != nil {
 			if errors.Is(err, storage.ErrConflict) {
+				// собираем shortURL
 				shortURL := storage.FindShortURL(ctx, mainURL)
 				responseHeader = 409
 				w.Header().Set("Content-Type", "text/plain")
@@ -71,8 +82,8 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 		storage.UUIDCounter++
 		storage.ShortURLStorage = append(storage.ShortURLStorage, models.ShortURL{
 			UUID:        storage.UUIDCounter,
-			ShortURL:    shortURL,
-			OriginalURL: URLSMap[shortURL],
+			ShortURL:    parsedURL.Path,
+			OriginalURL: URLSMap[parsedURL.Path],
 		})
 		if err := storage.Save(); err != nil {
 			log.Fatal(err)
