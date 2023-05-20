@@ -14,7 +14,7 @@ var URLSMap = make(map[string]string)
 
 var ShortURLStorage []models.ShortURL
 
-// GetStoragePath принимает значение path storage из main
+// GetStoragePath принимает значение path storage из config
 func GetStoragePath(str string) {
 	pathStorage = str
 }
@@ -49,11 +49,20 @@ func Load() error {
 	if err != nil {
 		return ErrReadFile
 	}
-	if err := json.Unmarshal(data, &ShortURLStorage); err != nil {
-		return err
+	fileInfo, err := os.Stat(pathStorage)
+	if err != nil {
+		// обработка ошибки
+	}
+	if fileInfo.Size() == 0 {
+		// файл пустой
+	} else {
+		// файл не пустой
+		if err := json.Unmarshal(data, &ShortURLStorage); err != nil {
+			return ErrUnmarshal
+		}
 	}
 	UUIDCounter = ShortURLStorage[len(ShortURLStorage)-1].UUID
-	return ErrUnmarshal
+	return nil
 }
 
 // RestoreURL записывает данные из структуры ShortURLStorage в мапу URLSMap

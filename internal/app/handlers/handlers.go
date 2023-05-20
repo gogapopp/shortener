@@ -87,9 +87,7 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 			ShortURL:    parsedURL.Path,
 			OriginalURL: URLSMap[parsedURL.Path],
 		})
-		if err := storage.Save(); err != nil {
-			log.Fatal(err)
-		}
+		storage.Save()
 	}
 
 	// отправляем ответ
