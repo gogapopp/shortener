@@ -42,12 +42,17 @@ func InitializeServerConfig() {
 	DatabaseDSN = FlagDatabasePath
 }
 
+// SetupDatabaseAndFilemanager пытается запустить базу данных, если приходит ошибка то пытается запустить файл менеджер, если опять ошибка начинает запись в память
 func SetupDatabaseAndFilemanager(ctx context.Context) {
 	if err := storage.InitializeDatabase(ctx, DatabaseDSN); err != nil {
 		if errors.Is(err, storage.ErrConnectToDatabase) {
 			fmt.Println("не удалось начать запись в базу данных:", err)
+			handlers.WriteToDatabase(false)
 			if err := InitializeFilemamager(StoragePath); err != nil {
-				fmt.Println("не удалось начать запись в файл:", err)
+				if errors.Is(err, storage.ErrCreateFile) {
+					fmt.Println("не удалось начать запись в файл:", err)
+					handlers.WriteToFile(false)
+				}
 			}
 		}
 	}
