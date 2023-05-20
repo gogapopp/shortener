@@ -11,20 +11,21 @@ import (
 )
 
 var db *sql.DB
-var err error
+
+var ErrConnectToDatabase = errors.New("ErrConnectToDatabase")
 
 // InitializeDatabase инициализирует базу данных если значение dsn не пустое
-func InitializeDatabase(dsn string) {
-	db, err = sql.Open("pgx", dsn)
+func InitializeDatabase(ctx context.Context, dsn string) error {
+	db, err := sql.Open("pgx", dsn)
 	if err != nil {
-		log.Fatal(err)
+		return ErrConnectToDatabase
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	if err = db.PingContext(ctx); err != nil {
-		log.Fatal(err)
+		return ErrConnectToDatabase
 	}
 
 	tx, err := db.BeginTx(ctx, nil)
@@ -43,13 +44,14 @@ func InitializeDatabase(dsn string) {
 	`)
 
 	tx.Commit()
+	return nil
 }
 
 var ErrConflict = errors.New("ErrConflict")
 
 // InsertURL записывает ссылку в базу данных, если уже имеется то обрабатываем ошибку
 func InsertURL(ctx context.Context, shortURL, longURL, correlationID string) error {
-	_, err = db.Exec("CREATE UNIQUE INDEX IF NOT EXISTS long_url_id ON urls(long_url)")
+	_, err := db.Exec("CREATE UNIQUE INDEX IF NOT EXISTS long_url_id ON urls(long_url)")
 	if err != nil {
 		log.Fatal(err)
 	}

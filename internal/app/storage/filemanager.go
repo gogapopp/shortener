@@ -2,7 +2,7 @@ package storage
 
 import (
 	"encoding/json"
-	"log"
+	"errors"
 	"os"
 
 	"github.com/gogapopp/shortener/internal/app/models"
@@ -19,13 +19,16 @@ func GetStoragePath(str string) {
 	pathStorage = str
 }
 
+var ErrCreateFile = errors.New("ErrCreateFile")
+
 // CreateFile создаёт файл с названием из pathStorage
-func CreateFile() {
+func CreateFile() error {
 	file, err := os.OpenFile(pathStorage, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
-		log.Fatal(err)
+		return ErrCreateFile
 	}
 	defer file.Close()
+	return nil
 }
 
 // Save записывает поля json из стуктуры ShortURLStorage в файл
