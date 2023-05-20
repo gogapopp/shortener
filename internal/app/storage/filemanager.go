@@ -20,6 +20,9 @@ func GetStoragePath(str string) {
 }
 
 var ErrCreateFile = errors.New("ErrCreateFile")
+var ErrMarshal = errors.New("ErrMarshal")
+var ErrReadFile = errors.New("ErrReadFile")
+var ErrUnmarshal = errors.New("ErrUnmarshal")
 
 // CreateFile создаёт файл с названием из pathStorage
 func CreateFile() error {
@@ -35,7 +38,7 @@ func CreateFile() error {
 func Save() error {
 	data, err := json.MarshalIndent(ShortURLStorage, "", "   ")
 	if err != nil {
-		return err
+		return ErrMarshal
 	}
 	return os.WriteFile(pathStorage, data, 0666)
 }
@@ -44,13 +47,13 @@ func Save() error {
 func Load() error {
 	data, err := os.ReadFile(pathStorage)
 	if err != nil {
-		return err
+		return ErrReadFile
 	}
 	if err := json.Unmarshal(data, &ShortURLStorage); err != nil {
 		return err
 	}
 	UUIDCounter = ShortURLStorage[len(ShortURLStorage)-1].UUID
-	return nil
+	return ErrUnmarshal
 }
 
 // RestoreURL записывает данные из структуры ShortURLStorage в мапу URLSMap

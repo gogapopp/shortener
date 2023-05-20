@@ -18,6 +18,8 @@ var URLSMap = storage.URLSMap
 var writeToFile bool = false
 var writeToDatabase bool = true
 
+var ErrParseURL = errors.New("ErrParseURL")
+
 func WriteToFile(b bool) {
 	writeToFile = b
 }
@@ -27,7 +29,7 @@ func WriteToDatabase(c bool) {
 
 // PostShortURL получает ссылку в body и присваивает ей уникальный ключ, значение хранит в мапе "key": "url"
 func PostShortURL(w http.ResponseWriter, r *http.Request) {
-	var responseHeader = 201
+	var responseHeader = http.StatusCreated
 	ctx := r.Context()
 	// читаем тело реквеста
 	body, err := io.ReadAll(r.Body)
@@ -57,16 +59,16 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 	if r.TLS != nil {
 		scheme = "https"
 	}
-	requestURL := fmt.Sprintf("%s://%s", scheme, host)
+	requestURL := fmt.Sprintf("%s://%s%s", scheme, host, parsedURL.Path)
 	// сохраняем в базу данных
 	if writeToDatabase {
 		// делаем запись в виде id (primary key), short_url, long_url
-		err := storage.InsertURL(ctx, requestURL+parsedURL.Path, URLSMap[parsedURL.Path], "")
+		err := storage.InsertURL(ctx, requestURL, URLSMap[parsedURL.Path], "")
 		if err != nil {
 			if errors.Is(err, storage.ErrConflict) {
 				// собираем shortURL
 				shortURL := storage.FindShortURL(ctx, mainURL)
-				responseHeader = 409
+				responseHeader = http.StatusConflict
 				w.Header().Set("Content-Type", "text/plain")
 				w.WriteHeader(responseHeader)
 				fmt.Fprint(w, shortURL)
@@ -113,6 +115,7 @@ func GetPingDatabase(w http.ResponseWriter, r *http.Request) {
 func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path
 	// проверяем есть ли значение в мапе
+	fmt.Println(URLSMap)
 	if _, ok := URLSMap[id]; ok {
 		w.Header().Add("Location", URLSMap[id])
 		w.WriteHeader(http.StatusTemporaryRedirect)
@@ -124,7 +127,7 @@ func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 
 // PostJSONHandler принимает url: url и возвращает result: shortUrl
 func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
-	var responseHeader = 201
+	var responseHeader = http.StatusCreated
 	ctx := r.Context()
 	// декодируем данные из тела запроса
 	var req models.Request
@@ -157,7 +160,7 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 		err := storage.InsertURL(ctx, shortURL, req.URL, "")
 		if err != nil {
 			if errors.Is(err, storage.ErrConflict) {
-				responseHeader = 409
+				responseHeader = http.StatusConflict
 				shortURL := storage.FindShortURL(ctx, req.URL)
 				resp.ShortURL = shortURL
 			} else {
@@ -175,9 +178,7 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 			ShortURL:    parsedURL.Path,
 			OriginalURL: URLSMap[parsedURL.Path],
 		})
-		if err := storage.Save(); err != nil {
-			log.Fatal(err)
-		}
+		storage.Save()
 	}
 
 	// устанавливаем заголовок Content-Type и отправляем ответ
@@ -191,7 +192,7 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 // PostBatchJSONhHandler
 func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
-	var responseHeader = 201
+	var responseHeader = http.StatusCreated
 	var req []models.BatchRequest
 	var resp []models.BatchResponse
 	if writeToDatabase {
@@ -221,7 +222,7 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 			// делаем запись в базу данных
 			if err := storage.InsertURL(ctx, BatchShortURL, req[k].OriginalURL, req[k].CorrelationID); err != nil {
 				if errors.Is(err, storage.ErrConflict) {
-					responseHeader = 409
+					responseHeader = http.StatusConflict
 					shortURL := storage.FindShortURL(ctx, req[k].OriginalURL)
 					BatchShortURL = shortURL
 				} else {
@@ -260,9 +261,7 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 				ShortURL:    parsedURL.Path,
 				OriginalURL: URLSMap[parsedURL.Path],
 			})
-			if err := storage.Save(); err != nil {
-				log.Fatal(err)
-			}
+			storage.Save()
 		}
 	}
 

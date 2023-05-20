@@ -11,12 +11,17 @@ import (
 )
 
 var db *sql.DB
-var err error
 
+var ErrConflict = errors.New("ErrConflict")
 var ErrConnectToDatabase = errors.New("ErrConnectToDatabase")
+var ErrBeginTx = errors.New("ErrBeginTx")
+var ErrCreateIndex = errors.New("ErrCreateIndex")
+var ErrInserIntoDB = errors.New("ErrInserIntoDB")
+var ErrRowsAffected = errors.New("ErrRowsAffected")
 
 // InitializeDatabase инициализирует базу данных если значение dsn не пустое
 func InitializeDatabase(ctx context.Context, dsn string) error {
+	var err error
 	db, err = sql.Open("pgx", dsn)
 	if err != nil {
 		return ErrConnectToDatabase
@@ -31,7 +36,7 @@ func InitializeDatabase(ctx context.Context, dsn string) error {
 
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
-		log.Fatal(err)
+		return ErrBeginTx
 	}
 	defer tx.Rollback()
 
@@ -48,21 +53,19 @@ func InitializeDatabase(ctx context.Context, dsn string) error {
 	return nil
 }
 
-var ErrConflict = errors.New("ErrConflict")
-
 // InsertURL записывает ссылку в базу данных, если уже имеется то обрабатываем ошибку
 func InsertURL(ctx context.Context, shortURL, longURL, correlationID string) error {
 	_, err := db.Exec("CREATE UNIQUE INDEX IF NOT EXISTS long_url_id ON urls(long_url)")
 	if err != nil {
-		log.Fatal(err)
+		return ErrCreateIndex
 	}
 	result, err := db.ExecContext(ctx, "INSERT INTO urls (short_url, long_url, correlation_id) VALUES ($1, $2, $3) ON CONFLICT (long_url) DO NOTHING", shortURL, longURL, correlationID)
 	if err != nil {
-		log.Fatal(err)
+		return ErrInserIntoDB
 	}
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		log.Fatal(err)
+		return ErrRowsAffected
 	}
 	if rowsAffected == 0 {
 		return ErrConflict

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/gogapopp/shortener/internal/app/encryptor"
 	"github.com/gogapopp/shortener/internal/app/handlers"
@@ -21,10 +22,12 @@ func InitializeFilemamager(storagePath string) error {
 	if err := storage.CreateFile(); err != nil {
 		return err
 	}
+	if err := storage.Load(); err != nil {
+		return err
+	}
+	storage.RestoreURL()
 	// разрешаем запись в файл
 	handlers.WriteToFile(true)
-	storage.Load()
-	storage.RestoreURL()
 	return nil
 }
 
@@ -46,12 +49,20 @@ func InitializeServerConfig() {
 func SetupDatabaseAndFilemanager(ctx context.Context) {
 	if err := storage.InitializeDatabase(ctx, DatabaseDSN); err != nil {
 		if errors.Is(err, storage.ErrConnectToDatabase) {
+			fmt.Println("не удалось инициализировать базу данных:", err)
+			handlers.WriteToDatabase(false)
+		} else {
 			fmt.Println("не удалось начать запись в базу данных:", err)
+			handlers.WriteToDatabase(false)
+			log.Fatal(err)
 		}
 	}
 	if err := InitializeFilemamager(StoragePath); err != nil {
 		if errors.Is(err, storage.ErrCreateFile) {
+			fmt.Println("не удалось создать файл:", err)
+		} else {
 			fmt.Println("не удалось начать запись в файл:", err)
+			log.Fatal(err)
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package encryptor
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/google/uuid"
@@ -21,10 +22,10 @@ func ShortenerURL(url string) string {
 	address := baseAddr
 	// проверяем соответсвует ли строка формату http://example.ru/
 	if !strings.HasPrefix(baseAddr, "http://") {
-		address = "http://" + address
+		address = fmt.Sprintf("http://%s", address)
 	}
 	if !strings.HasSuffix(baseAddr, "/") {
-		address = address + "/"
+		address = fmt.Sprintf("%s/", address)
 	}
 	return address + id.String()
 }
