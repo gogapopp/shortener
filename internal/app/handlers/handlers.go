@@ -16,7 +16,7 @@ import (
 
 var URLSMap = storage.URLSMap
 var writeToFile bool = false
-var writeToDatabase bool = false
+var writeToDatabase bool = true
 
 func WriteToFile(b bool) {
 	writeToFile = b

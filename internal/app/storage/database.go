@@ -11,12 +11,13 @@ import (
 )
 
 var db *sql.DB
+var err error
 
 var ErrConnectToDatabase = errors.New("ErrConnectToDatabase")
 
 // InitializeDatabase инициализирует базу данных если значение dsn не пустое
 func InitializeDatabase(ctx context.Context, dsn string) error {
-	db, err := sql.Open("pgx", dsn)
+	db, err = sql.Open("pgx", dsn)
 	if err != nil {
 		return ErrConnectToDatabase
 	}
@@ -24,7 +25,7 @@ func InitializeDatabase(ctx context.Context, dsn string) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	if err = db.PingContext(ctx); err != nil {
+	if err := db.PingContext(ctx); err != nil {
 		return ErrConnectToDatabase
 	}
 

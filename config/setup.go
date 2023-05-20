@@ -17,12 +17,12 @@ var DatabaseDSN string
 
 // InitializeFilemamager инициализируе функции создания файла, считывает его и заполняет значения из файла в память
 func InitializeFilemamager(storagePath string) error {
-	// разрешаем запись в файл
-	handlers.WriteToFile(true)
 	// инициализируем функции
 	if err := storage.CreateFile(); err != nil {
 		return err
 	}
+	// разрешаем запись в файл
+	handlers.WriteToFile(true)
 	storage.Load()
 	storage.RestoreURL()
 	return nil
@@ -47,13 +47,11 @@ func SetupDatabaseAndFilemanager(ctx context.Context) {
 	if err := storage.InitializeDatabase(ctx, DatabaseDSN); err != nil {
 		if errors.Is(err, storage.ErrConnectToDatabase) {
 			fmt.Println("не удалось начать запись в базу данных:", err)
-			handlers.WriteToDatabase(false)
-			if err := InitializeFilemamager(StoragePath); err != nil {
-				if errors.Is(err, storage.ErrCreateFile) {
-					fmt.Println("не удалось начать запись в файл:", err)
-					handlers.WriteToFile(false)
-				}
-			}
+		}
+	}
+	if err := InitializeFilemamager(StoragePath); err != nil {
+		if errors.Is(err, storage.ErrCreateFile) {
+			fmt.Println("не удалось начать запись в файл:", err)
 		}
 	}
 }
