@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/gogapopp/shortener/internal/app/models"
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
@@ -49,16 +51,17 @@ func InitializeDatabase(ctx context.Context, dsn string) error {
 		)
 	`)
 
+	_, err = tx.ExecContext(ctx, "CREATE UNIQUE INDEX IF NOT EXISTS long_url_id ON urls(long_url)")
+	if err != nil {
+		return ErrCreateIndex
+	}
+
 	tx.Commit()
 	return nil
 }
 
 // InsertURL записывает ссылку в базу данных, если уже имеется то обрабатываем ошибку
 func InsertURL(ctx context.Context, shortURL, longURL, correlationID string) error {
-	_, err := db.Exec("CREATE UNIQUE INDEX IF NOT EXISTS long_url_id ON urls(long_url)")
-	if err != nil {
-		return ErrCreateIndex
-	}
 	result, err := db.ExecContext(ctx, "INSERT INTO urls (short_url, long_url, correlation_id) VALUES ($1, $2, $3) ON CONFLICT (long_url) DO NOTHING", shortURL, longURL, correlationID)
 	if err != nil {
 		return ErrInserIntoDB
@@ -69,6 +72,26 @@ func InsertURL(ctx context.Context, shortURL, longURL, correlationID string) err
 	}
 	if rowsAffected == 0 {
 		return ErrConflict
+	}
+	return nil
+}
+
+func BatchInsertURL(ctx context.Context, urls []models.BatchDatabaseResponse) error {
+	// собираем запрос
+	query := "INSERT INTO urls (short_url, long_url, correlation_id) VALUES "
+	values := []interface{}{}
+
+	for i, url := range urls {
+		query += fmt.Sprintf("($%d, $%d, $%d),", i*3+1, i*3+2, i*3+3)
+		values = append(values, url.ShortURL, url.OriginalURL, url.CorrelationID)
+	}
+	// удаляем последнюю запятую и обновляем поля
+	query = query[:len(query)-1]
+
+	// выполняем запрос
+	_, err := db.ExecContext(ctx, query, values...)
+	if err != nil {
+		return ErrInserIntoDB
 	}
 	return nil
 }

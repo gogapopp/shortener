@@ -51,17 +51,16 @@ func Load() error {
 	}
 	fileInfo, err := os.Stat(pathStorage)
 	if err != nil {
-		// обработка ошибки
+		return err
 	}
-	if fileInfo.Size() == 0 {
-		// файл пустой
-	} else {
-		// файл не пустой
+	if fileInfo.Size() != 0 {
 		if err := json.Unmarshal(data, &ShortURLStorage); err != nil {
 			return ErrUnmarshal
 		}
 	}
-	UUIDCounter = ShortURLStorage[len(ShortURLStorage)-1].UUID
+	if len(ShortURLStorage) != 0 {
+		UUIDCounter = ShortURLStorage[len(ShortURLStorage)-1].UUID
+	}
 	return nil
 }
 

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/gogapopp/shortener/internal/app/encryptor"
 	"github.com/gogapopp/shortener/internal/app/handlers"
@@ -37,17 +36,8 @@ func InitializeFilemamager() error {
 	if err := storage.CreateFile(); err != nil {
 		return err
 	}
-	fileInfo, err := os.Stat(StoragePath)
-	if err != nil {
-		// обработка ошибки
-	}
-	if fileInfo.Size() == 0 {
-		// файл пустой
-	} else {
-		// файл не пустой
-		if err := storage.Load(); err != nil {
-			return err
-		}
+	if err := storage.Load(); err != nil {
+		return err
 	}
 	storage.RestoreURL()
 	// разрешаем запись в файл

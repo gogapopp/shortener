@@ -193,13 +193,13 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 	var responseHeader = http.StatusCreated
 	var req []models.BatchRequest
 	var resp []models.BatchResponse
+	var databaseResp []models.BatchDatabaseResponse
+	ctx := r.Context()
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "error decoding request body", http.StatusMethodNotAllowed)
+		return
+	}
 	if writeToDatabase {
-		ctx := r.Context()
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "error decoding request body", http.StatusMethodNotAllowed)
-			return
-		}
-
 		// начинаем проходить по реквесту
 		for k := range req {
 			// проверяем является ли переданное значение ссылкой
@@ -217,22 +217,22 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			// сохраняем значение в мапу
 			URLSMap[parsedURL.Path] = req[k].OriginalURL
-			// делаем запись в базу данных
-			if err := storage.InsertURL(ctx, BatchShortURL, req[k].OriginalURL, req[k].CorrelationID); err != nil {
-				if errors.Is(err, storage.ErrConflict) {
-					responseHeader = http.StatusConflict
-					shortURL := storage.FindShortURL(ctx, req[k].OriginalURL)
-					BatchShortURL = shortURL
-				} else {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			}
+
+			databaseResp = append(databaseResp, models.BatchDatabaseResponse{
+				ShortURL:      BatchShortURL,
+				OriginalURL:   req[k].OriginalURL,
+				CorrelationID: req[k].CorrelationID,
+			})
 
 			resp = append(resp, models.BatchResponse{
 				ShortURL:      BatchShortURL,
 				CorrelationID: req[k].CorrelationID,
 			})
+		}
+		err := storage.BatchInsertURL(ctx, databaseResp)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 
