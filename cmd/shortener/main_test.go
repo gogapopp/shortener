@@ -16,8 +16,9 @@ func TestHandlers(t *testing.T) {
 		expectedCode int
 		expectedBody string
 	}{
-		{method: http.MethodPost, urlPath: "/", expectedCode: http.StatusCreated},
-		{method: http.MethodGet, urlPath: "/unavailable-key", expectedCode: http.StatusBadRequest, expectedBody: ""},
+		{method: http.MethodPost, urlPath: "/", expectedCode: http.StatusBadRequest, expectedBody: "Invalid URL\n"},
+		{method: http.MethodGet, urlPath: "/unavailable-key", expectedCode: http.StatusBadRequest, expectedBody: "Link does not exist\n"},
+		{method: http.MethodPost, urlPath: "/api/shorten", expectedCode: http.StatusBadRequest, expectedBody: "Invalid URL\n"},
 	}
 
 	for _, tc := range testCases {
