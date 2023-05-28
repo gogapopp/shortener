@@ -28,6 +28,7 @@ func InitializeDatabase(ctx context.Context, dsn string) error {
 	if err != nil {
 		return ErrConnectToDatabase
 	}
+	defer db.Close()
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()

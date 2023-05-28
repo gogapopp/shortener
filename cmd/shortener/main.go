@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gogapopp/shortener/config"
 	"github.com/gogapopp/shortener/internal/app/logger"
@@ -20,7 +21,10 @@ func main() {
 	// парсим флаги
 	config.InitializeServerConfig()
 	// пытается подключится к базе данных, если не получается то пытаеимся записывать в файл, если не получается то в память
-	config.SetupDatabaseAndFilemanager(ctx)
+	if err := config.SetupDatabaseAndFilemanager(ctx); err != nil {
+		log.Println("ошибка: ", err)
+		os.Exit(1)
+	}
 	// запускаем сервер
 	logger.Log.Info("Running the server at", zap.String("addres", config.RunAddr))
 	r := routes.Routes()
