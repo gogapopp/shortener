@@ -9,6 +9,7 @@ import (
 	"github.com/gogapopp/shortener/config"
 	"github.com/gogapopp/shortener/internal/app/logger"
 	"github.com/gogapopp/shortener/internal/app/routes"
+	"github.com/gogapopp/shortener/internal/app/storage"
 	"go.uber.org/zap"
 )
 
@@ -25,6 +26,7 @@ func main() {
 		log.Println("ошибка: ", err)
 		os.Exit(1)
 	}
+	defer storage.DB().Close()
 	// запускаем сервер
 	logger.Log.Info("Running the server at", zap.String("addres", config.RunAddr))
 	r := routes.Routes()
