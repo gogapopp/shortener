@@ -31,6 +31,11 @@ func WriteToDatabase(c bool) {
 
 // PostShortURL получает ссылку в body и присваивает ей уникальный ключ, значение хранит в мапе "key": "url"
 func PostShortURL(w http.ResponseWriter, r *http.Request) {
+	_, err := auth.GetUserIDFromCookie(w, r)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 	var responseHeader = http.StatusCreated
 	ctx := r.Context()
 	// читаем тело реквеста
@@ -130,6 +135,12 @@ func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 
 // PostJSONHandler принимает url: url и возвращает result: shortUrl
 func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
+	_, err := auth.GetUserIDFromCookie(w, r)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	var responseHeader = http.StatusCreated
 	ctx := r.Context()
 	// декодируем данные из тела запроса
@@ -139,7 +150,7 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// проверяем имеет ли body в себе url ссылку
-	_, err := url.ParseRequestURI(req.URL)
+	_, err = url.ParseRequestURI(req.URL)
 	if err != nil {
 		http.Error(w, "Invalid URL", http.StatusBadRequest)
 		return
