@@ -61,7 +61,7 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 	// сохраняем значение в мапу
 	URLSMap[parsedURL.Path] = mainURL
 	// auth
-	auth.SaveURLToDatabase(userID, parsedURL.Host+parsedURL.Path, mainURL)
+	auth.SaveURLToDatabase(userID, fmt.Sprint("http://"+parsedURL.Host+parsedURL.Path), mainURL)
 	// получаем request адресс с которого происходит запрос
 	host := r.Host
 	scheme := "http"
@@ -133,6 +133,11 @@ func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 
 // PostJSONHandler принимает url: url и возвращает result: shortUrl
 func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
+	userID, err := auth.GetUserIDFromCookie(r)
+	if err != nil {
+		userID = auth.CreateNewUser()
+		auth.SetUserIDCookie(w, userID)
+	}
 	var responseHeader = http.StatusCreated
 	ctx := r.Context()
 	// декодируем данные из тела запроса
@@ -142,7 +147,7 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// проверяем имеет ли body в себе url ссылку
-	_, err := url.ParseRequestURI(req.URL)
+	_, err = url.ParseRequestURI(req.URL)
 	if err != nil {
 		http.Error(w, "Invalid URL", http.StatusBadRequest)
 		return
@@ -156,6 +161,8 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// сохраняем значение в мапу
 	URLSMap[parsedURL.Path] = req.URL
+	// auth
+	auth.SaveURLToDatabase(userID, fmt.Sprint("http://"+parsedURL.Host+parsedURL.Path), req.URL)
 	// передаём значение в ответ
 	var resp models.Response
 	resp.ShortURL = shortURL
@@ -198,6 +205,11 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 // PostBatchJSONhHandler
 func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
+	userID, err := auth.GetUserIDFromCookie(r)
+	if err != nil {
+		userID = auth.CreateNewUser()
+		auth.SetUserIDCookie(w, userID)
+	}
 	var responseHeader = http.StatusCreated
 	var req []models.BatchRequest
 	var resp []models.BatchResponse
@@ -225,6 +237,8 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			// сохраняем значение в мапу
 			URLSMap[parsedURL.Path] = req[k].OriginalURL
+			// auth
+			auth.SaveURLToDatabase(userID, fmt.Sprint("http://"+parsedURL.Host+parsedURL.Path), req[k].OriginalURL)
 
 			databaseResp = append(databaseResp, models.BatchDatabaseResponse{
 				ShortURL:      BatchShortURL,
