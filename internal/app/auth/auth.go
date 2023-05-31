@@ -4,80 +4,82 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 )
 
-var SecretKey = []byte("supersecretkey")
-
-type User struct {
-	ID   int
-	URLs []URL
-}
+var secretKey = []byte("my-secret-key")
 
 type URL struct {
-	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
+	ShortURL    string `json:"short_url"`
 }
 
-var Users = make(map[int]User)
-
-func GetUserIDFromCookie(w http.ResponseWriter, r *http.Request) (int, error) {
-	c, err := r.Cookie("user_id")
+func GetUserIDFromCookie(r *http.Request) (string, error) {
+	cookie, err := r.Cookie("user_id")
 	if err != nil {
-		return createNewUser(w)
+		return "", err
 	}
 
-	parts := strings.Split(c.Value, "|")
+	parts := strings.Split(cookie.Value, "|")
 	if len(parts) != 2 {
-		return createNewUser(w)
+		return "", http.ErrNoCookie
 	}
 
-	userID, err := strconv.Atoi(parts[0])
-	if err != nil {
-		return createNewUser(w)
-	}
+	userID := parts[0]
+	signature := parts[1]
 
-	mac := hmac.New(sha256.New, SecretKey)
-	mac.Write([]byte(parts[0]))
-	expectedMAC := base64.StdEncoding.EncodeToString(mac.Sum(nil))
-	if !hmac.Equal([]byte(parts[1]), []byte(expectedMAC)) {
-		return createNewUser(w)
+	expectedSignature := GenerateSignature(userID)
+	if signature != expectedSignature {
+		return "", http.ErrNoCookie
 	}
 
 	return userID, nil
 }
 
-func createNewUser(w http.ResponseWriter) (int, error) {
-	userID := len(Users) + 1
-	Users[userID] = User{ID: userID}
-	mac := hmac.New(sha256.New, SecretKey)
-	mac.Write([]byte(strconv.Itoa(userID)))
-	macStr := base64.StdEncoding.EncodeToString(mac.Sum(nil))
-	c := &http.Cookie{
+func SetUserIDCookie(w http.ResponseWriter, userID string) {
+	signature := GenerateSignature(userID)
+	value := userID + "|" + signature
+
+	http.SetCookie(w, &http.Cookie{
 		Name:  "user_id",
-		Value: strconv.Itoa(userID) + "|" + macStr,
-	}
-	http.SetCookie(w, c)
-	return userID, nil
+		Value: value,
+	})
 }
 
-func AddURL(userID int, shortURL string, originalURL string) {
-	user, ok := Users[userID]
+func GenerateSignature(data string) string {
+	h := hmac.New(sha256.New, secretKey)
+	h.Write([]byte(data))
+	return base64.StdEncoding.EncodeToString(h.Sum(nil))
+}
+
+func CreateNewUser() string {
+	nextUserID++
+	return strconv.Itoa(nextUserID)
+}
+
+func SaveURLToDatabase(userID string, shortURL string, longURL string) {
+	urls := GetURLsFromDatabase(userID)
+	urls = append(urls, URL{
+		ShortURL:    shortURL,
+		OriginalURL: longURL,
+	})
+	SaveURLsToDatabase(userID, urls)
+}
+
+var nextUserID = 0
+
+var database = make(map[string][]URL)
+
+func GetURLsFromDatabase(userID string) []URL {
+	urls, ok := database[userID]
 	if !ok {
-		fmt.Println("такого юзера не существует")
+		return []URL{}
 	}
-	// добавляем новый URL в список URL пользователя
-	user.URLs = append(user.URLs, URL{ShortURL: shortURL, OriginalURL: originalURL})
-	Users[userID] = user
+	return urls
 }
 
-func DeleteURLs(userID int) {
-	user, ok := Users[userID]
-	if ok {
-		user.URLs = nil
-		Users[userID] = user
-	}
+func SaveURLsToDatabase(userID string, urls []URL) {
+	database[userID] = urls
 }
