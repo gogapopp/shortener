@@ -8,7 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-const SECRET_KEY = "supersecretkey"
+const SecretKey = "supersecretkey"
 
 type User struct {
 	ID   int
@@ -30,7 +30,7 @@ func GetUserIDFromCookie(w http.ResponseWriter, r *http.Request) (int, error) {
 
 	tokenString := c.Value
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SECRET_KEY), nil
+		return []byte(SecretKey), nil
 	})
 	if err != nil || !token.Valid {
 		return createNewUser(w)
@@ -53,7 +53,7 @@ func createNewUser(w http.ResponseWriter) (int, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"userID": strconv.Itoa(userID),
 	})
-	tokenString, err := token.SignedString([]byte(SECRET_KEY))
+	tokenString, err := token.SignedString([]byte(SecretKey))
 	if err != nil {
 		return -1, err
 	}

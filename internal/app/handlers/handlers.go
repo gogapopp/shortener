@@ -90,7 +90,6 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 		})
 		storage.Save()
 	}
-
 	// отправляем ответ
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(responseHeader)
@@ -263,7 +262,6 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 			storage.Save()
 		}
 	}
-
 	// устанавливаем заголовок Content-Type и отправляем ответ
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(responseHeader)
@@ -281,10 +279,14 @@ func GetJSONURLS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for k, v := range URLSMap {
-		auth.AddURL(userID, fmt.Sprint("http://"+k), v)
+		auth.AddURL(userID, fmt.Sprint("http://"+r.Host+r.URL.Host+k), v)
 	}
 
-	user, _ := auth.Users[userID]
+	user, ok := auth.Users[userID]
+	if !ok {
+		http.Error(w, "No Content", http.StatusNoContent)
+		return
+	}
 	fmt.Println(user.URLs)
 	jsonData, err := json.Marshal(user.URLs)
 	if err != nil {
