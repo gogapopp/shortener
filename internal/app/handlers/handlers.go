@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/gogapopp/shortener/internal/app/auth"
 	"github.com/gogapopp/shortener/internal/app/encryptor"
 	"github.com/gogapopp/shortener/internal/app/models"
 	"github.com/gogapopp/shortener/internal/app/storage"
@@ -270,4 +271,27 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 		return
 	}
+}
+
+func GetJSONURLS(w http.ResponseWriter, r *http.Request) {
+	userID, err := auth.GetUserIDFromCookie(w, r)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	for k, v := range URLSMap {
+		auth.AddURL(userID, fmt.Sprint("http://"+k), v)
+	}
+
+	user, _ := auth.Users[userID]
+	fmt.Println(user.URLs)
+	jsonData, err := json.Marshal(user.URLs)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonData)
 }
