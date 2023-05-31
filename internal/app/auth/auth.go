@@ -27,9 +27,7 @@ var Users = make(map[int]User)
 func GetUserIDFromCookie(w http.ResponseWriter, r *http.Request) (int, error) {
 	c, err := r.Cookie("user_id")
 	if err != nil {
-		createNewUser(w)
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return -1, nil
+		return createNewUser(w)
 	}
 
 	parts := strings.Split(c.Value, "|")
