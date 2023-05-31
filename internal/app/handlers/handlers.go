@@ -278,22 +278,23 @@ func GetJSONURLS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	auth.DeleteURLs(userID)
 	for k, v := range URLSMap {
 		auth.AddURL(userID, fmt.Sprint("http://"+r.Host+r.URL.Host+k), v)
 	}
 
 	user, ok := auth.Users[userID]
-	if !ok {
-		http.Error(w, "No Content", http.StatusNoContent)
+	if !ok || len(user.URLs) == 0 {
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
-	fmt.Println(user.URLs)
-	jsonData, err := json.Marshal(user.URLs)
+
+	data, err := json.Marshal(user.URLs)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonData)
+	w.Write(data)
 }

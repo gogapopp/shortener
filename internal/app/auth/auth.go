@@ -1,14 +1,16 @@
 package auth
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"strconv"
-
-	"github.com/golang-jwt/jwt/v4"
+	"strings"
 )
 
-const SecretKey = "supersecretkey"
+var SecretKey = []byte("supersecretkey")
 
 type User struct {
 	ID   int
@@ -25,41 +27,40 @@ var Users = make(map[int]User)
 func GetUserIDFromCookie(w http.ResponseWriter, r *http.Request) (int, error) {
 	c, err := r.Cookie("user_id")
 	if err != nil {
+		createNewUser(w)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return -1, nil
+	}
+
+	parts := strings.Split(c.Value, "|")
+	if len(parts) != 2 {
 		return createNewUser(w)
 	}
 
-	tokenString := c.Value
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SecretKey), nil
-	})
-	if err != nil || !token.Valid {
+	userID, err := strconv.Atoi(parts[0])
+	if err != nil {
 		return createNewUser(w)
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		userIDstring := claims["userID"].(string)
-		userID, err := strconv.Atoi(userIDstring)
-		if err != nil {
-			return createNewUser(w)
-		}
-		return userID, nil
+	mac := hmac.New(sha256.New, SecretKey)
+	mac.Write([]byte(parts[0]))
+	expectedMAC := base64.StdEncoding.EncodeToString(mac.Sum(nil))
+	if !hmac.Equal([]byte(parts[1]), []byte(expectedMAC)) {
+		return createNewUser(w)
 	}
-	return createNewUser(w)
+
+	return userID, nil
 }
 
 func createNewUser(w http.ResponseWriter) (int, error) {
 	userID := len(Users) + 1
 	Users[userID] = User{ID: userID}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"userID": strconv.Itoa(userID),
-	})
-	tokenString, err := token.SignedString([]byte(SecretKey))
-	if err != nil {
-		return -1, err
-	}
+	mac := hmac.New(sha256.New, SecretKey)
+	mac.Write([]byte(strconv.Itoa(userID)))
+	macStr := base64.StdEncoding.EncodeToString(mac.Sum(nil))
 	c := &http.Cookie{
 		Name:  "user_id",
-		Value: tokenString,
+		Value: strconv.Itoa(userID) + "|" + macStr,
 	}
 	http.SetCookie(w, c)
 	return userID, nil
@@ -73,4 +74,12 @@ func AddURL(userID int, shortURL string, originalURL string) {
 	// добавляем новый URL в список URL пользователя
 	user.URLs = append(user.URLs, URL{ShortURL: shortURL, OriginalURL: originalURL})
 	Users[userID] = user
+}
+
+func DeleteURLs(userID int) {
+	user, ok := Users[userID]
+	if ok {
+		user.URLs = nil
+		Users[userID] = user
+	}
 }
