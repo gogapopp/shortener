@@ -61,7 +61,9 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 	// сохраняем значение в мапу
 	URLSMap[parsedURL.Path] = mainURL
 	// сохраняем значение в мапу для cookie auth
-	if _, err := r.Cookie("user_id"); err == nil {
+	_, err = r.Cookie("user_id")
+	if err == nil {
+		fmt.Println("код выполняется", err)
 		CookieURLSMap[parsedURL.Path] = mainURL
 	}
 	// получаем request адресс с которого происходит запрос
