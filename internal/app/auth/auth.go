@@ -29,8 +29,8 @@ var Users = make(map[int]User)
 
 func GetUserIDFromCookie(w http.ResponseWriter, r *http.Request) (int, error) {
 	c, err := r.Cookie("user_id")
-	logger.Log.Info("auth.go", zap.String("cookie", c.Value))
 	if err != nil {
+		logger.Log.Info("auth.go", zap.String("cookie r.Cookie выдало err)", err.Error()))
 		return createNewUser(w)
 	}
 
