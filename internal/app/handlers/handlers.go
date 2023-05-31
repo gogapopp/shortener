@@ -16,6 +16,7 @@ import (
 )
 
 var URLSMap = storage.URLSMap
+var CookieURLSMap = make(map[string]string)
 var writeToFile bool = false
 var writeToDatabase bool = true
 
@@ -54,6 +55,10 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 	}
 	// сохраняем значение в мапу
 	URLSMap[parsedURL.Path] = mainURL
+	// сохраняем значение в мапу для cookie auth
+	if _, err := r.Cookie("user_id"); err == nil {
+		CookieURLSMap[parsedURL.Path] = mainURL
+	}
 	// получаем request адресс с которого происходит запрос
 	host := r.Host
 	scheme := "http"
@@ -148,6 +153,12 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// сохраняем значение в мапу
 	URLSMap[parsedURL.Path] = req.URL
+	// сохраняем значение в мапу для cookie auth
+	_, err = r.Cookie("user_id")
+	if err == nil {
+		CookieURLSMap[parsedURL.Path] = req.URL
+	}
+	fmt.Println(CookieURLSMap, err)
 	// передаём значение в ответ
 	var resp models.Response
 	resp.ShortURL = shortURL
@@ -217,6 +228,10 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			// сохраняем значение в мапу
 			URLSMap[parsedURL.Path] = req[k].OriginalURL
+			// сохраняем значение в мапу для cookie auth
+			if _, err := r.Cookie("user_id"); err == nil {
+				CookieURLSMap[parsedURL.Path] = req[k].OriginalURL
+			}
 
 			databaseResp = append(databaseResp, models.BatchDatabaseResponse{
 				ShortURL:      BatchShortURL,
@@ -253,6 +268,10 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			// сохраняем значение в мапу
 			URLSMap[parsedURL.Path] = req[k].OriginalURL
+			// сохраняем значение в мапу для cookie auth
+			if _, err := r.Cookie("user_id"); err == nil {
+				CookieURLSMap[parsedURL.Path] = req[k].OriginalURL
+			}
 			storage.UUIDCounter++
 			storage.ShortURLStorage = append(storage.ShortURLStorage, models.ShortURL{
 				UUID:        storage.UUIDCounter,
@@ -279,10 +298,10 @@ func GetJSONURLS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	auth.DeleteURLs(userID)
-	for k, v := range URLSMap {
-		auth.AddURL(userID, fmt.Sprint("http://"+r.Host+r.URL.Host+k), v)
+	for k, v := range CookieURLSMap {
+		auth.AddURL(userID, fmt.Sprint("http://"+r.Host+k), v)
 	}
-
+	fmt.Println(CookieURLSMap)
 	user, ok := auth.Users[userID]
 	if !ok || len(user.URLs) == 0 {
 		w.WriteHeader(http.StatusNoContent)

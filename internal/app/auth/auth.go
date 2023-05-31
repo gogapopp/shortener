@@ -8,9 +8,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/gogapopp/shortener/internal/app/logger"
-	"go.uber.org/zap"
 )
 
 var SecretKey = []byte("supersecretkey")
@@ -30,7 +27,6 @@ var Users = make(map[int]User)
 func GetUserIDFromCookie(w http.ResponseWriter, r *http.Request) (int, error) {
 	c, err := r.Cookie("user_id")
 	if err != nil {
-		logger.Log.Info("auth.go", zap.String("cookie r.Cookie выдало err)", err.Error()))
 		return createNewUser(w)
 	}
 
