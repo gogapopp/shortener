@@ -9,12 +9,14 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/gogapopp/shortener/internal/app/auth"
 	"github.com/gogapopp/shortener/internal/app/encryptor"
 	"github.com/gogapopp/shortener/internal/app/models"
 	"github.com/gogapopp/shortener/internal/app/storage"
 )
 
 var URLSMap = storage.URLSMap
+var CookieURLSMap = make(map[string]string)
 var writeToFile bool = false
 var writeToDatabase bool = true
 
@@ -29,6 +31,11 @@ func WriteToDatabase(c bool) {
 
 // PostShortURL получает ссылку в body и присваивает ей уникальный ключ, значение хранит в мапе "key": "url"
 func PostShortURL(w http.ResponseWriter, r *http.Request) {
+	userID, err := auth.GetUserIDFromCookie(r)
+	if err != nil {
+		userID = auth.CreateNewUser()
+		auth.SetUserIDCookie(w, userID)
+	}
 	var responseHeader = http.StatusCreated
 	ctx := r.Context()
 	// читаем тело реквеста
@@ -53,6 +60,8 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 	}
 	// сохраняем значение в мапу
 	URLSMap[parsedURL.Path] = mainURL
+	// auth
+	auth.SaveURLToDatabase(userID, fmt.Sprint("http://"+parsedURL.Host+parsedURL.Path), mainURL)
 	// получаем request адресс с которого происходит запрос
 	host := r.Host
 	scheme := "http"
@@ -89,7 +98,6 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 		})
 		storage.Save()
 	}
-
 	// отправляем ответ
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(responseHeader)
@@ -125,6 +133,11 @@ func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 
 // PostJSONHandler принимает url: url и возвращает result: shortUrl
 func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
+	userID, err := auth.GetUserIDFromCookie(r)
+	if err != nil {
+		userID = auth.CreateNewUser()
+		auth.SetUserIDCookie(w, userID)
+	}
 	var responseHeader = http.StatusCreated
 	ctx := r.Context()
 	// декодируем данные из тела запроса
@@ -134,7 +147,7 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// проверяем имеет ли body в себе url ссылку
-	_, err := url.ParseRequestURI(req.URL)
+	_, err = url.ParseRequestURI(req.URL)
 	if err != nil {
 		http.Error(w, "Invalid URL", http.StatusBadRequest)
 		return
@@ -148,6 +161,8 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// сохраняем значение в мапу
 	URLSMap[parsedURL.Path] = req.URL
+	// auth
+	auth.SaveURLToDatabase(userID, fmt.Sprint("http://"+parsedURL.Host+parsedURL.Path), req.URL)
 	// передаём значение в ответ
 	var resp models.Response
 	resp.ShortURL = shortURL
@@ -190,6 +205,11 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 // PostBatchJSONhHandler
 func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
+	userID, err := auth.GetUserIDFromCookie(r)
+	if err != nil {
+		userID = auth.CreateNewUser()
+		auth.SetUserIDCookie(w, userID)
+	}
 	var responseHeader = http.StatusCreated
 	var req []models.BatchRequest
 	var resp []models.BatchResponse
@@ -217,6 +237,8 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			// сохраняем значение в мапу
 			URLSMap[parsedURL.Path] = req[k].OriginalURL
+			// auth
+			auth.SaveURLToDatabase(userID, fmt.Sprint("http://"+parsedURL.Host+parsedURL.Path), req[k].OriginalURL)
 
 			databaseResp = append(databaseResp, models.BatchDatabaseResponse{
 				ShortURL:      BatchShortURL,
@@ -262,11 +284,33 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 			storage.Save()
 		}
 	}
-
 	// устанавливаем заголовок Content-Type и отправляем ответ
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(responseHeader)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetURLs(w http.ResponseWriter, r *http.Request) {
+	// проверяем наличие куки с идентификатором пользователя
+	userID, err := auth.GetUserIDFromCookie(r)
+	if err != nil {
+		userID = auth.CreateNewUser()
+		auth.SetUserIDCookie(w, userID)
+	}
+	// получаем все сокращенные пользователем URL из базы данных
+	urls := auth.GetURLsFromDatabase(userID)
+
+	if len(urls) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	// устанавливаем заголовок Content-Type и отправляем ответ
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(urls); err != nil {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 		return
 	}
