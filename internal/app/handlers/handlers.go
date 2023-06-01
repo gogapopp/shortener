@@ -297,10 +297,9 @@ func GetURLs(w http.ResponseWriter, r *http.Request) {
 	// проверяем наличие куки с идентификатором пользователя
 	userID, err := auth.GetUserIDFromCookie(r)
 	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
+		userID = auth.CreateNewUser()
+		auth.SetUserIDCookie(w, userID)
 	}
-
 	// получаем все сокращенные пользователем URL из базы данных
 	urls := auth.GetURLsFromDatabase(userID)
 
