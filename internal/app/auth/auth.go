@@ -83,13 +83,14 @@ var (
 	mu       sync.Mutex
 )
 
-func SetDeleteFlag(userID string, shortURL string, deleteFlag bool, baseAddr string) {
+func SetDeleteFlag(userID string, shortURL string, baseAddr string) {
 	mu.Lock()
 	defer mu.Unlock()
 	urls := GetURLsFromDatabase(userID)
+	fmt.Println(urls)
 	for k, url := range urls {
 		if url.ShortURL == fmt.Sprint(baseAddr+shortURL) {
-			urls[k].DeleteFlag = deleteFlag
+			urls[k].DeleteFlag = true
 			break
 		}
 	}

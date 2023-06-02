@@ -128,9 +128,11 @@ func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 	// проверяем есть ли значение в мапе
 	urls := auth.GetURLsFromDatabase(userID)
 	for _, url := range urls {
-		if url.DeleteFlag == true {
-			w.WriteHeader(http.StatusGone)
-			return
+		if url.ShortURL == fmt.Sprint("http://"+r.Host+r.URL.Path) {
+			if url.DeleteFlag {
+				w.WriteHeader(http.StatusGone)
+				return
+			}
 		}
 	}
 	// проверяем "удаления ли ссылка"
@@ -344,25 +346,39 @@ func DeleteShortURLs(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// создаем канал для отправки идентификаторов на удаление
+	// канал для сигнала к выходу из горутины
+	doneCh := make(chan struct{})
+	defer close(doneCh)
 	idCh := make(chan string)
+	defer close(idCh)
 
-	// запускаем горутины для обработки удаления URL
-	go deleteURLs(idCh, userID, fmt.Sprint("http://"+r.Host))
-	go deleteURLs(idCh, userID, fmt.Sprint("http://"+r.Host))
+	workers := 5
+	for i := 0; i < workers; i++ {
+		go deleteURLs(doneCh, idCh, userID, fmt.Sprint("http://"+r.Host))
+	}
 
 	// отправляем идентификаторы в канал idCh
 	for _, id := range IDs {
-		idCh <- id
+		select {
+		case <-doneCh:
+			return
+		case idCh <- id:
+		}
 	}
 
-	// закрываем канал idCh
-	close(idCh)
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func deleteURLs(idCh chan string, userID string, baseAddr string) {
-	for id := range idCh {
-		auth.SetDeleteFlag(userID, id, true, baseAddr)
+func deleteURLs(doneCh chan struct{}, idCh chan string, userID string, baseAddr string) {
+	for {
+		select {
+		case <-doneCh:
+			return
+		case id, ok := <-idCh:
+			if !ok {
+				return
+			}
+			auth.SetDeleteFlag(userID, id, baseAddr)
+		}
 	}
 }
