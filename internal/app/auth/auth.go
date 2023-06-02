@@ -4,9 +4,12 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 var secretKey = []byte("my-secret-key")
@@ -14,6 +17,7 @@ var secretKey = []byte("my-secret-key")
 type URL struct {
 	OriginalURL string `json:"original_url"`
 	ShortURL    string `json:"short_url"`
+	DeleteFlag  bool
 }
 
 func GetUserIDFromCookie(r *http.Request) (string, error) {
@@ -64,20 +68,37 @@ func SaveURLToDatabase(userID string, shortURL string, longURL string) {
 	urls = append(urls, URL{
 		ShortURL:    shortURL,
 		OriginalURL: longURL,
+		DeleteFlag:  false,
 	})
 	SaveURLsToDatabase(userID, urls)
 }
 
+func GetURLsFromDatabase(userID string) []URL {
+	return database[userID]
+}
+
 var nextUserID = 0
 
-var database = make(map[string][]URL)
+var (
+	database = make(map[string][]URL)
+	mu       sync.Mutex
+)
 
-func GetURLsFromDatabase(userID string) []URL {
-	urls, ok := database[userID]
-	if !ok {
-		return []URL{}
+func SetDeleteFlag(userID string, shortURL string, deleteFlag bool, baseAddr string) {
+	mu.Lock()
+	log.Println("Lock")
+	defer mu.Unlock()
+	urls := GetURLsFromDatabase(userID)
+	log.Println("GetURLsFromDatabase")
+	for k, url := range urls {
+		log.Println("url")
+		log.Println(url.ShortURL, baseAddr+shortURL)
+		if url.ShortURL == fmt.Sprint(baseAddr+shortURL) {
+			urls[k].DeleteFlag = deleteFlag
+			break
+		}
 	}
-	return urls
+	SaveURLsToDatabase(userID, urls)
 }
 
 func SaveURLsToDatabase(userID string, urls []URL) {

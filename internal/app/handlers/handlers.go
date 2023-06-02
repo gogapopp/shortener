@@ -119,9 +119,22 @@ func GetPingDatabase(w http.ResponseWriter, r *http.Request) {
 
 // GetHandleURL проверяет валидная ссылка или нет, если валидная то редиректит по адрессу
 func GetHandleURL(w http.ResponseWriter, r *http.Request) {
+	userID, err := auth.GetUserIDFromCookie(r)
+	if err != nil {
+		userID = auth.CreateNewUser()
+		auth.SetUserIDCookie(w, userID)
+	}
 	id := r.URL.Path
 	// проверяем есть ли значение в мапе
+	urls := auth.GetURLsFromDatabase(userID)
+	for _, url := range urls {
+		if url.DeleteFlag == true {
+			w.WriteHeader(http.StatusGone)
+			return
+		}
+	}
 	fmt.Println(URLSMap)
+	// проверяем "удаления ли ссылка"
 	if _, ok := URLSMap[id]; ok {
 		w.Header().Add("Location", URLSMap[id])
 		w.WriteHeader(http.StatusTemporaryRedirect)
@@ -307,11 +320,55 @@ func GetURLs(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
-
 	// устанавливаем заголовок Content-Type и отправляем ответ
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(urls); err != nil {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 		return
+	}
+}
+
+func DeleteShortURLs(w http.ResponseWriter, r *http.Request) {
+	userID, err := auth.GetUserIDFromCookie(r)
+	if err != nil {
+		userID = auth.CreateNewUser()
+		auth.SetUserIDCookie(w, userID)
+	}
+	// читаем тело реквеста
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusMethodNotAllowed)
+		return
+	}
+	log.Println("ids", string(body))
+	var IDs []string
+	err = json.Unmarshal(body, &IDs)
+	if err != nil {
+		log.Println("err", err)
+
+	}
+	log.Println("ids", IDs)
+	// создаем канал для отправки идентификаторов на удаление
+	idCh := make(chan string)
+
+	// запускаем горутины для обработки удаления URL
+	go deleteURLs(idCh, userID, fmt.Sprint("http://"+r.Host))
+	go deleteURLs(idCh, userID, fmt.Sprint("http://"+r.Host))
+
+	// отправляем идентификаторы в канал idCh
+	for _, id := range IDs {
+		idCh <- id
+	}
+
+	// закрываем канал idCh
+	close(idCh)
+	w.WriteHeader(http.StatusAccepted)
+}
+
+func deleteURLs(idCh chan string, userID string, baseAddr string) {
+	log.Println("deleteURLs")
+	for id := range idCh {
+		log.Println("SetDeleteFlag")
+		auth.SetDeleteFlag(userID, id, true, baseAddr)
 	}
 }
