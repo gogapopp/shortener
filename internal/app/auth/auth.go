@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -86,13 +85,9 @@ var (
 
 func SetDeleteFlag(userID string, shortURL string, deleteFlag bool, baseAddr string) {
 	mu.Lock()
-	log.Println("Lock")
 	defer mu.Unlock()
 	urls := GetURLsFromDatabase(userID)
-	log.Println("GetURLsFromDatabase")
 	for k, url := range urls {
-		log.Println("url")
-		log.Println(url.ShortURL, baseAddr+shortURL)
 		if url.ShortURL == fmt.Sprint(baseAddr+shortURL) {
 			urls[k].DeleteFlag = deleteFlag
 			break

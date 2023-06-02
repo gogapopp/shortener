@@ -31,4 +31,8 @@ func main() {
 	logger.Log.Info("Running the server at", zap.String("addres", config.RunAddr))
 	r := routes.Routes()
 	log.Fatal(http.ListenAndServe(config.RunAddr, r))
+	go func() {
+		r := routes.Routes()
+		log.Fatal(http.ListenAndServe(config.RunAddr, r))
+	}()
 }

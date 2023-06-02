@@ -47,8 +47,7 @@ func InitializeDatabase(ctx context.Context, dsn string) error {
 			id serial PRIMARY KEY,
 			short_url TEXT,
 			long_url TEXT,
-			correlation_id TEXT,
-			is_deleted BOOL,
+			correlation_id TEXT
 		)
 	`)
 

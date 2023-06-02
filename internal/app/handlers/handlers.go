@@ -133,7 +133,6 @@ func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	fmt.Println(URLSMap)
 	// проверяем "удаления ли ссылка"
 	if _, ok := URLSMap[id]; ok {
 		w.Header().Add("Location", URLSMap[id])
@@ -340,14 +339,11 @@ func DeleteShortURLs(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error reading request body", http.StatusMethodNotAllowed)
 		return
 	}
-	log.Println("ids", string(body))
 	var IDs []string
 	err = json.Unmarshal(body, &IDs)
 	if err != nil {
-		log.Println("err", err)
-
+		log.Fatal(err)
 	}
-	log.Println("ids", IDs)
 	// создаем канал для отправки идентификаторов на удаление
 	idCh := make(chan string)
 
@@ -366,9 +362,7 @@ func DeleteShortURLs(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteURLs(idCh chan string, userID string, baseAddr string) {
-	log.Println("deleteURLs")
 	for id := range idCh {
-		log.Println("SetDeleteFlag")
 		auth.SetDeleteFlag(userID, id, true, baseAddr)
 	}
 }
