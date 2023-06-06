@@ -10,6 +10,7 @@ import (
 	"net/url"
 
 	"github.com/gogapopp/shortener/internal/app/auth"
+	"github.com/gogapopp/shortener/internal/app/concurrency"
 	"github.com/gogapopp/shortener/internal/app/encryptor"
 	"github.com/gogapopp/shortener/internal/app/models"
 	"github.com/gogapopp/shortener/internal/app/storage"
@@ -61,7 +62,7 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 	// сохраняем значение в мапу
 	URLSMap[parsedURL.Path] = mainURL
 	// auth
-	auth.SaveURLToDatabase(userID, fmt.Sprint("http://"+parsedURL.Host+parsedURL.Path), mainURL)
+	auth.GlobalStore.SaveURLToDatabase(userID, fmt.Sprint("http://"+parsedURL.Host+parsedURL.Path), mainURL)
 	// получаем request адресс с которого происходит запрос
 	host := r.Host
 	scheme := "http"
@@ -126,7 +127,7 @@ func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 	}
 	id := r.URL.Path
 	// проверяем есть ли значение в мапе
-	urls := auth.GetURLsFromDatabase(userID)
+	urls := auth.GlobalStore.GetURLsFromDatabase(userID)
 	for _, url := range urls {
 		if url.ShortURL == fmt.Sprint("http://"+r.Host+r.URL.Path) {
 			if url.DeleteFlag {
@@ -176,7 +177,7 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 	// сохраняем значение в мапу
 	URLSMap[parsedURL.Path] = req.URL
 	// auth
-	auth.SaveURLToDatabase(userID, fmt.Sprint("http://"+parsedURL.Host+parsedURL.Path), req.URL)
+	auth.GlobalStore.SaveURLToDatabase(userID, fmt.Sprint("http://"+parsedURL.Host+parsedURL.Path), req.URL)
 	// передаём значение в ответ
 	var resp models.Response
 	resp.ShortURL = shortURL
@@ -252,7 +253,7 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 			// сохраняем значение в мапу
 			URLSMap[parsedURL.Path] = req[k].OriginalURL
 			// auth
-			auth.SaveURLToDatabase(userID, fmt.Sprint("http://"+parsedURL.Host+parsedURL.Path), req[k].OriginalURL)
+			auth.GlobalStore.SaveURLToDatabase(userID, fmt.Sprint("http://"+parsedURL.Host+parsedURL.Path), req[k].OriginalURL)
 
 			databaseResp = append(databaseResp, models.BatchDatabaseResponse{
 				ShortURL:      BatchShortURL,
@@ -315,7 +316,7 @@ func GetURLs(w http.ResponseWriter, r *http.Request) {
 		auth.SetUserIDCookie(w, userID)
 	}
 	// получаем все сокращенные пользователем URL из базы данных
-	urls := auth.GetURLsFromDatabase(userID)
+	urls := auth.GlobalStore.GetURLsFromDatabase(userID)
 
 	if len(urls) == 0 {
 		w.WriteHeader(http.StatusNoContent)
@@ -346,39 +347,12 @@ func DeleteShortURLs(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// канал для сигнала к выходу из горутины
-	doneCh := make(chan struct{})
-	defer close(doneCh)
-	idCh := make(chan string)
-	defer close(idCh)
 
-	workers := 5
-	for i := 0; i < workers; i++ {
-		go deleteURLs(doneCh, idCh, userID, fmt.Sprint("http://"+r.Host))
-	}
-
-	// отправляем идентификаторы в канал idCh
-	for _, id := range IDs {
-		select {
-		case <-doneCh:
-			return
-		case idCh <- id:
-		}
-	}
+	// буфер для Allocate
+	var jobs = make(chan string, 10)
+	go concurrency.Allocate(jobs, IDs)
+	noOfWorkers := 5
+	concurrency.CreateWorkerPool(noOfWorkers, jobs, userID, fmt.Sprint("http://"+r.Host))
 
 	w.WriteHeader(http.StatusAccepted)
-}
-
-func deleteURLs(doneCh chan struct{}, idCh chan string, userID string, baseAddr string) {
-	for {
-		select {
-		case <-doneCh:
-			return
-		case id, ok := <-idCh:
-			if !ok {
-				return
-			}
-			auth.SetDeleteFlag(userID, id, baseAddr)
-		}
-	}
 }
