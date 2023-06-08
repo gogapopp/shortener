@@ -17,7 +17,6 @@ import (
 )
 
 var URLSMap = storage.URLSMap
-var CookieURLSMap = make(map[string]string)
 var writeToFile bool = false
 var writeToDatabase bool = true
 
@@ -125,10 +124,11 @@ func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 		userID = auth.CreateNewUser()
 		auth.SetUserIDCookie(w, userID)
 	}
-	id := r.URL.Path
-	// проверяем есть ли значение в мапе
+	// проверяем "удалена ли ссылка"
 	urls := auth.GlobalStore.GetURLsFromDatabase(userID)
+	fmt.Println(userID, urls)
 	for _, url := range urls {
+		fmt.Println(url.ShortURL, fmt.Sprint("http://"+r.Host+r.URL.Path))
 		if url.ShortURL == fmt.Sprint("http://"+r.Host+r.URL.Path) {
 			if url.DeleteFlag {
 				w.WriteHeader(http.StatusGone)
@@ -136,7 +136,8 @@ func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	// проверяем "удаления ли ссылка"
+	id := r.URL.Path
+	// проверяем есть ли значение в мапе
 	if _, ok := URLSMap[id]; ok {
 		w.Header().Add("Location", URLSMap[id])
 		w.WriteHeader(http.StatusTemporaryRedirect)
@@ -220,6 +221,7 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 // PostBatchJSONhHandler
 func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("PostBatchJSONhHandler")
 	userID, err := auth.GetUserIDFromCookie(r)
 	if err != nil {
 		userID = auth.CreateNewUser()
