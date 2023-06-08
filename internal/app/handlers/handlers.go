@@ -8,7 +8,10 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 
+	"github.com/gogapopp/shortener/internal/app/auth"
+	"github.com/gogapopp/shortener/internal/app/concurrency"
 	"github.com/gogapopp/shortener/internal/app/encryptor"
 	"github.com/gogapopp/shortener/internal/app/models"
 	"github.com/gogapopp/shortener/internal/app/storage"
@@ -29,6 +32,11 @@ func WriteToDatabase(c bool) {
 
 // PostShortURL получает ссылку в body и присваивает ей уникальный ключ, значение хранит в мапе "key": "url"
 func PostShortURL(w http.ResponseWriter, r *http.Request) {
+	userID, err := auth.GetUserIDFromCookie(r)
+	if err != nil {
+		userID = auth.CreateNewUser()
+		auth.SetUserIDCookie(w, userID)
+	}
 	var responseHeader = http.StatusCreated
 	ctx := r.Context()
 	// читаем тело реквеста
@@ -53,6 +61,8 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 	}
 	// сохраняем значение в мапу
 	URLSMap[parsedURL.Path] = mainURL
+	// auth
+	auth.GlobalStore.SaveURLToDatabase(userID, fmt.Sprint("http://"+parsedURL.Host+parsedURL.Path), mainURL)
 	// получаем request адресс с которого происходит запрос
 	host := r.Host
 	scheme := "http"
@@ -89,7 +99,6 @@ func PostShortURL(w http.ResponseWriter, r *http.Request) {
 		})
 		storage.Save()
 	}
-
 	// отправляем ответ
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(responseHeader)
@@ -111,9 +120,23 @@ func GetPingDatabase(w http.ResponseWriter, r *http.Request) {
 
 // GetHandleURL проверяет валидная ссылка или нет, если валидная то редиректит по адрессу
 func GetHandleURL(w http.ResponseWriter, r *http.Request) {
+	userID, err := auth.GetUserIDFromCookie(r)
+	if err != nil {
+		userID = auth.CreateNewUser()
+		auth.SetUserIDCookie(w, userID)
+	}
+	// проверяем "удалена ли ссылка"
+	urls := auth.GlobalStore.GetURLsFromDatabase(userID)
+	for _, url := range urls {
+		if url.ShortURL == fmt.Sprint("http://"+r.Host+r.URL.Path) {
+			if url.DeleteFlag {
+				w.WriteHeader(http.StatusGone)
+				return
+			}
+		}
+	}
 	id := r.URL.Path
 	// проверяем есть ли значение в мапе
-	fmt.Println(URLSMap)
 	if _, ok := URLSMap[id]; ok {
 		w.Header().Add("Location", URLSMap[id])
 		w.WriteHeader(http.StatusTemporaryRedirect)
@@ -125,6 +148,11 @@ func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 
 // PostJSONHandler принимает url: url и возвращает result: shortUrl
 func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
+	userID, err := auth.GetUserIDFromCookie(r)
+	if err != nil {
+		userID = auth.CreateNewUser()
+		auth.SetUserIDCookie(w, userID)
+	}
 	var responseHeader = http.StatusCreated
 	ctx := r.Context()
 	// декодируем данные из тела запроса
@@ -134,7 +162,7 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// проверяем имеет ли body в себе url ссылку
-	_, err := url.ParseRequestURI(req.URL)
+	_, err = url.ParseRequestURI(req.URL)
 	if err != nil {
 		http.Error(w, "Invalid URL", http.StatusBadRequest)
 		return
@@ -148,6 +176,8 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// сохраняем значение в мапу
 	URLSMap[parsedURL.Path] = req.URL
+	// auth
+	auth.GlobalStore.SaveURLToDatabase(userID, fmt.Sprint("http://"+parsedURL.Host+parsedURL.Path), req.URL)
 	// передаём значение в ответ
 	var resp models.Response
 	resp.ShortURL = shortURL
@@ -190,6 +220,11 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 // PostBatchJSONhHandler
 func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
+	userID, err := auth.GetUserIDFromCookie(r)
+	if err != nil {
+		userID = auth.CreateNewUser()
+		auth.SetUserIDCookie(w, userID)
+	}
 	var responseHeader = http.StatusCreated
 	var req []models.BatchRequest
 	var resp []models.BatchResponse
@@ -217,6 +252,8 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			// сохраняем значение в мапу
 			URLSMap[parsedURL.Path] = req[k].OriginalURL
+			// auth
+			auth.GlobalStore.SaveURLToDatabase(userID, fmt.Sprint("http://"+parsedURL.Host+parsedURL.Path), req[k].OriginalURL)
 
 			databaseResp = append(databaseResp, models.BatchDatabaseResponse{
 				ShortURL:      BatchShortURL,
@@ -262,7 +299,6 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 			storage.Save()
 		}
 	}
-
 	// устанавливаем заголовок Content-Type и отправляем ответ
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(responseHeader)
@@ -270,4 +306,58 @@ func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 		return
 	}
+}
+
+func GetURLs(w http.ResponseWriter, r *http.Request) {
+	// проверяем наличие куки с идентификатором пользователя
+	userID, err := auth.GetUserIDFromCookie(r)
+	if err != nil {
+		userID = auth.CreateNewUser()
+		auth.SetUserIDCookie(w, userID)
+	}
+	// получаем все сокращенные пользователем URL из базы данных
+	urls := auth.GlobalStore.GetURLsFromDatabase(userID)
+
+	if len(urls) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	// устанавливаем заголовок Content-Type и отправляем ответ
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(urls); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
+}
+
+func DeleteShortURLs(w http.ResponseWriter, r *http.Request) {
+	userID, err := auth.GetUserIDFromCookie(r)
+	if err != nil {
+		userID = auth.CreateNewUser()
+		auth.SetUserIDCookie(w, userID)
+	}
+	// читаем тело реквеста
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusMethodNotAllowed)
+		return
+	}
+	var IDs []string
+	err = json.Unmarshal(body, &IDs)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for k, id := range IDs {
+		if !strings.HasPrefix(id, "/") {
+			IDs[k] = fmt.Sprintf("/%s", id)
+		}
+	}
+
+	// буфер для Allocate
+	var jobs = make(chan string, 10)
+	go concurrency.Allocate(jobs, IDs)
+	noOfWorkers := 5
+	concurrency.CreateWorkerPool(noOfWorkers, jobs, userID, fmt.Sprint("http://"+r.Host))
+
+	w.WriteHeader(http.StatusAccepted)
 }

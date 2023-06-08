@@ -29,3 +29,9 @@ type BatchDatabaseResponse struct {
 	OriginalURL   string
 	CorrelationID string
 }
+
+type URL struct {
+	OriginalURL string `json:"original_url"`
+	ShortURL    string `json:"short_url"`
+	DeleteFlag  bool
+}
