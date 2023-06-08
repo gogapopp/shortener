@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/gogapopp/shortener/internal/app/auth"
 	"github.com/gogapopp/shortener/internal/app/concurrency"
@@ -126,9 +127,7 @@ func GetHandleURL(w http.ResponseWriter, r *http.Request) {
 	}
 	// проверяем "удалена ли ссылка"
 	urls := auth.GlobalStore.GetURLsFromDatabase(userID)
-	fmt.Println(userID, urls)
 	for _, url := range urls {
-		fmt.Println(url.ShortURL, fmt.Sprint("http://"+r.Host+r.URL.Path))
 		if url.ShortURL == fmt.Sprint("http://"+r.Host+r.URL.Path) {
 			if url.DeleteFlag {
 				w.WriteHeader(http.StatusGone)
@@ -221,7 +220,6 @@ func PostJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 // PostBatchJSONhHandler
 func PostBatchJSONhHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("PostBatchJSONhHandler")
 	userID, err := auth.GetUserIDFromCookie(r)
 	if err != nil {
 		userID = auth.CreateNewUser()
@@ -348,6 +346,11 @@ func DeleteShortURLs(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &IDs)
 	if err != nil {
 		log.Fatal(err)
+	}
+	for k, id := range IDs {
+		if !strings.HasPrefix(id, "/") {
+			IDs[k] = fmt.Sprintf("/%s", id)
+		}
 	}
 
 	// буфер для Allocate
