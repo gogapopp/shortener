@@ -17,7 +17,7 @@ func Routes() *chi.Mux {
 		r.Post("/api/shorten", logger.RequestJSONLogger(middlewares.GzipMiddleware(handlers.PostJSONHandler)))
 		r.Post("/api/shorten/batch", logger.RequestBatchJSONLogger(middlewares.GzipMiddleware(handlers.PostBatchJSONhHandler)))
 		r.Get("/api/user/urls", logger.ResponseLogger(handlers.GetURLs))
-		r.Delete("/api/user/urls", handlers.DeleteShortURLs)
+		r.Delete("/api/user/urls", logger.ResponseDELETELogger(handlers.DeleteShortURLs))
 	})
 	return r
 }

@@ -56,7 +56,7 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.responseData.status = statusCode
 }
 
-// RequestLogger логирует GET запрос
+// ResponseLogger логирует GET запрос
 func ResponseLogger(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		responseData := &responseData{
@@ -157,6 +157,32 @@ func RequestBatchJSONLogger(h http.HandlerFunc) http.HandlerFunc {
 			zap.String("URL", r.Host),
 			zap.String("method", r.Method),
 			zap.Int64("duration", duration.Nanoseconds()),
+		)
+	})
+}
+
+// ResponseDELETELogger логирует DELETE запрос
+func ResponseDELETELogger(h http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// читаем боди запоса
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// декодируем json чтоб выводить строку в логи без лишних пробелов
+		var IDs []string
+		err = json.Unmarshal(body, &IDs)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// возвращаем данные обратно
+		r.Body = io.NopCloser(bytes.NewBuffer(body))
+
+		h(w, r)
+		Log.Info("POST request",
+			zap.String("URL", r.Host),
+			zap.String("method", r.Method),
+			zap.Strings("body", IDs),
 		)
 	})
 }
