@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
+//go:generate mockgen -source=redirect.go -destination=mocks/mock.go
 type URLGetter interface {
 	GetURL(longURL string) (string, error)
 }

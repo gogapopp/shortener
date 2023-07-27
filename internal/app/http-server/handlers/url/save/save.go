@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
+//go:generate mockgen -source=save.go -destination=mocks/mock.go
 type URLSaver interface {
 	SaveURL(baseURL, longURL, shortURL string)
 }
