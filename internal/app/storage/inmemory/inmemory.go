@@ -30,3 +30,7 @@ func (s *storage) GetURL(longURL string) (string, error) {
 	}
 	return shortURL, nil
 }
+
+func (s *storage) Ping() error {
+	return fmt.Errorf("error ping DB")
+}

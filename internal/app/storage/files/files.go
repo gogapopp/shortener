@@ -81,12 +81,16 @@ func (s *storage) SaveURL(baseURL, longURL, shortURL string) error {
 
 func (s *storage) GetURL(longURL string) (string, error) {
 	const op = "storage.files.GetURL"
-	for _, fileUrl := range urlFileStorage {
-		s.urls[fileUrl.ShortURL] = fileUrl.OriginalURL
+	for _, fileURL := range urlFileStorage {
+		s.urls[fileURL.ShortURL] = fileURL.OriginalURL
 	}
 	shortURL, ok := s.urls[longURL]
 	if !ok {
 		return "", fmt.Errorf("url not found")
 	}
 	return shortURL, nil
+}
+
+func (s *storage) Ping() error {
+	return fmt.Errorf("error ping DB")
 }
