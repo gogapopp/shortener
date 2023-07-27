@@ -8,11 +8,11 @@ type Response struct {
 	ShortURL string `json:"result"`
 }
 
-// type ShortURL struct {
-// 	UUID        int    `json:"uuid"`
-// 	ShortURL    string `json:"short_url"`
-// 	OriginalURL string `json:"original_url"`
-// }
+type FileStorage struct {
+	UUID        int    `json:"uuid"`
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
+}
 
 // type BatchRequest struct {
 // 	CorrelationID string `json:"correlation_id"`

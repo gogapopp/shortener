@@ -27,7 +27,7 @@ func main() {
 		log.Fatal(err)
 	}
 	// подключаем хранилище
-	storage := storage.NewRepo(ctx, cfg, log)
+	storage, err := storage.NewRepo(ctx, cfg, log)
 	if err != nil {
 		log.Fatal(err)
 	}

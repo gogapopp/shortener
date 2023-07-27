@@ -18,8 +18,9 @@ func NewStorage(log *zap.SugaredLogger) *storage {
 	}
 }
 
-func (s *storage) SaveURL(baseURL, longURL, shortURL string) {
+func (s *storage) SaveURL(baseURL, longURL, shortURL string) error {
 	s.urls[shortURL] = longURL
+	return nil
 }
 
 func (s *storage) GetURL(longURL string) (string, error) {
