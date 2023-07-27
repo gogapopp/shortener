@@ -1,6 +1,8 @@
 package inmemory
 
 import (
+	"fmt"
+
 	"go.uber.org/zap"
 )
 
@@ -17,5 +19,13 @@ func NewStorage(log *zap.SugaredLogger) *storage {
 }
 
 func (s *storage) SaveURL(baseURL, longURL, shortURL string) {
-	s.urls[longURL] = shortURL
+	s.urls[shortURL] = longURL
+}
+
+func (s *storage) GetURL(longURL string) (string, error) {
+	shortURL, ok := s.urls[longURL]
+	if !ok {
+		return "", fmt.Errorf("url not found")
+	}
+	return shortURL, nil
 }

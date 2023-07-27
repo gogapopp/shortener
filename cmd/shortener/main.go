@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/gogapopp/shortener/internal/app/config"
+	"github.com/gogapopp/shortener/internal/app/http-server/handlers/redirect"
 	"github.com/gogapopp/shortener/internal/app/http-server/handlers/url/save"
 	mwAuth "github.com/gogapopp/shortener/internal/app/http-server/middlewares/auth"
 	mwGzip "github.com/gogapopp/shortener/internal/app/http-server/middlewares/gzip"
@@ -37,7 +38,7 @@ func main() {
 	r.Use(mwLogger.NewLogger(log))
 	r.Route("/", func(r chi.Router) {
 		r.Post("/", save.PostSaveHandler(log, storage, cfg))
-		// r.Get("/{id}", handlers.GetHandleURL)
+		r.Get("/{id}", redirect.GetURLGetterHandler(log, storage, cfg))
 		// r.Get("/ping", handlers.GetPingDatabase)
 		// r.Post("/api/shorten", handlers.PostJSONHandler)
 		// r.Post("/api/shorten/batch", handlers.PostBatchJSONhHandler)

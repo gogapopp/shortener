@@ -37,7 +37,6 @@ func PostSaveHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.Conf
 		shortURL := urlshortener.ShortenerURL(cfg.BaseAddr, bodyURL)
 		// сохраняем короткую ссылку
 		urlSaver.SaveURL(cfg.BaseAddr, bodyURL, shortURL)
-
 		// отправляем ответ
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusCreated)

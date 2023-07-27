@@ -10,6 +10,7 @@ import (
 
 type Storage interface {
 	SaveURL(baseURL, longURL, shortURL string)
+	GetURL(longURL string) (string, error)
 }
 
 func NewRepo(ctx context.Context, cfg *config.Config, log *zap.SugaredLogger) Storage {

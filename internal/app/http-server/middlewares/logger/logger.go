@@ -12,7 +12,7 @@ func NewLogger(log *zap.SugaredLogger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		log.Info("logger middleware enabled")
 		fn := func(w http.ResponseWriter, r *http.Request) {
-			log.Infow(
+			log.Infow("request",
 				"method", r.Method,
 				"path", r.URL.Path,
 				"remote_addr", r.RemoteAddr,
