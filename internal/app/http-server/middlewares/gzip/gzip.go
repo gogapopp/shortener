@@ -1,4 +1,4 @@
-package gzipmw
+package gzip
 
 import (
 	"compress/gzip"

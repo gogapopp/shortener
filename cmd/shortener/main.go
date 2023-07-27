@@ -4,49 +4,48 @@ import (
 	"context"
 	"net/http"
 	_ "net/http/pprof"
-	"os"
 
 	"github.com/go-chi/chi"
 	"github.com/gogapopp/shortener/internal/app/config"
-	"github.com/gogapopp/shortener/internal/app/handlers"
-	"github.com/gogapopp/shortener/internal/app/logger"
-	"github.com/gogapopp/shortener/internal/app/middlewares/gzipmw"
-	mwLogger "github.com/gogapopp/shortener/internal/app/middlewares/logger"
+	"github.com/gogapopp/shortener/internal/app/http-server/handlers/url/save"
+	mwAuth "github.com/gogapopp/shortener/internal/app/http-server/middlewares/auth"
+	mwGzip "github.com/gogapopp/shortener/internal/app/http-server/middlewares/gzip"
+	mwLogger "github.com/gogapopp/shortener/internal/app/http-server/middlewares/logger"
+	"github.com/gogapopp/shortener/internal/app/lib/logger"
 	"github.com/gogapopp/shortener/internal/app/storage"
-	"go.uber.org/zap"
 )
 
 func main() {
 	ctx := context.Background()
+	// парсим конфиг
+	cfg := config.ParseConfig()
 	// инициализируем логер
 	log, err := logger.NewLogger()
 	if err != nil {
 		log.Fatal(err)
 	}
-	// парсим флаги
-	config.InitializeServerConfig()
-	// пытается подключится к базе данных, если не получается то пытаеимся записывать в файл, если не получается то в память
-	if err := config.SetupDatabaseAndFilemanager(ctx); err != nil {
-		log.Info("ошибка: ", err)
-		os.Exit(1)
+	// подключаем хранилище
+	storage := storage.NewRepo(ctx, cfg, log)
+	if err != nil {
+		log.Fatal(err)
 	}
-	defer storage.DB().Close()
 
-	// роуты
+	// подключаем роуты и мидлвееры
 	r := chi.NewRouter()
-	r.Use(gzipmw.GzipMiddleware())
+	r.Use(mwAuth.AuthMiddleware(log))
+	r.Use(mwGzip.GzipMiddleware(log))
 	r.Use(mwLogger.NewLogger(log))
 	r.Route("/", func(r chi.Router) {
-		r.Post("/", handlers.PostShortURL)
-		r.Get("/{id}", handlers.GetHandleURL)
-		r.Get("/ping", handlers.GetPingDatabase)
-		r.Post("/api/shorten", handlers.PostJSONHandler)
-		r.Post("/api/shorten/batch", handlers.PostBatchJSONhHandler)
-		r.Get("/api/user/urls", handlers.GetURLs)
-		r.Delete("/api/user/urls", handlers.DeleteShortURLs)
+		r.Post("/", save.PostSaveHandler(log, storage, cfg))
+		// r.Get("/{id}", handlers.GetHandleURL)
+		// r.Get("/ping", handlers.GetPingDatabase)
+		// r.Post("/api/shorten", handlers.PostJSONHandler)
+		// r.Post("/api/shorten/batch", handlers.PostBatchJSONhHandler)
+		// r.Get("/api/user/urls", handlers.GetURLs)
+		// r.Delete("/api/user/urls", handlers.DeleteShortURLs)
 	})
 
 	// запускаем сервер
-	logger.Log.Info("Running the server at", zap.String("addres", config.RunAddr))
-	log.Fatal(http.ListenAndServe(config.RunAddr, r))
+	log.Info("Running the server at: ", "addres: ", cfg.RunAddr)
+	log.Fatal(http.ListenAndServe(cfg.RunAddr, r))
 }

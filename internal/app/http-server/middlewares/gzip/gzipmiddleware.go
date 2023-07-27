@@ -1,14 +1,17 @@
-package gzipmw
+package gzip
 
 import (
 	"net/http"
 	"strings"
+
+	"go.uber.org/zap"
 )
 
 // GzipMiddleware проверяет сжат ли запрос и возвращает сжат
-func GzipMiddleware() func(next http.Handler) http.Handler {
+func GzipMiddleware(log *zap.SugaredLogger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Info("gzip middleware enabled")
+		fn := func(w http.ResponseWriter, r *http.Request) {
 			ow := w
 
 			// проверяем тип контента в запроса
@@ -43,6 +46,8 @@ func GzipMiddleware() func(next http.Handler) http.Handler {
 			}
 
 			next.ServeHTTP(ow, r)
-		})
+		}
+
+		return http.HandlerFunc(fn)
 	}
 }
