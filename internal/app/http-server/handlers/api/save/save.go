@@ -42,7 +42,7 @@ func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.
 		resp.ShortURL = shortURL
 		// устанавливаем заголовок Content-Type и отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusCreated)
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			log.Info(fmt.Sprintf("%s: %s", op, err))
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
