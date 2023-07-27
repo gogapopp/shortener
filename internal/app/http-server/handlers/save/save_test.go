@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/gogapopp/shortener/internal/app/config"
-	mock_save "github.com/gogapopp/shortener/internal/app/http-server/handlers/url/save/mocks"
+	mock_save "github.com/gogapopp/shortener/internal/app/http-server/handlers/save/mocks"
 	"github.com/golang/mock/gomock"
 	"go.uber.org/zap"
 )
@@ -59,9 +59,11 @@ func TestPostSaveHandler(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			handler.ServeHTTP(w, req)
+			resp := w.Result()
+			defer resp.Body.Close()
 
-			if w.Result().StatusCode != tc.expectedCode {
-				t.Errorf("expected %d, got %d", tc.expectedCode, w.Result().StatusCode)
+			if resp.StatusCode != tc.expectedCode {
+				t.Errorf("expected %d, got %d", tc.expectedCode, resp.StatusCode)
 			}
 
 			if tc.expectedCode != http.StatusBadRequest && !strings.HasPrefix(w.Body.String(), "http://localhost:8080/") {
