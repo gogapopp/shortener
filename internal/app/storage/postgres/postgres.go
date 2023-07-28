@@ -63,8 +63,7 @@ func (s *storage) SaveURL(longURL, shortURL, correlationID string, userID string
 func (s *storage) GetURL(shortURL, userID string) (string, error) {
 	const op = "storage.postgres.GetURL"
 	var longURL string
-	fmt.Println(shortURL, userID)
-	row := s.db.QueryRow("SELECT long_url FROM urls WHERE short_url = $1 AND user_id = $2", shortURL, userID)
+	row := s.db.QueryRow("SELECT long_url FROM urls WHERE short_url = $1", shortURL)
 	err := row.Scan(&longURL)
 	if err != nil {
 		return "", fmt.Errorf("%s: %s", op, err)
