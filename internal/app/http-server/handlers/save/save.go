@@ -26,9 +26,8 @@ func PostSaveHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.Conf
 		// получаем userID из контекста который был установлен мидлвеером userIdentity
 		userID, err := auth.GetUserIDFromCookie(r)
 		if err != nil {
-			log.Infof("%s: %s", op, err)
-			http.Error(w, "something went wrong", http.StatusInternalServerError)
-			return
+			userID = auth.GenerateUniqueUserID()
+			auth.SetUserIDCookie(w, userID)
 		}
 		// читаем тело реквеста
 		body, err := io.ReadAll(r.Body)

@@ -26,9 +26,8 @@ func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.
 		// получаем userID из контекста который был установлен мидлвеером userIdentity
 		userID, err := auth.GetUserIDFromCookie(r)
 		if err != nil {
-			log.Infof("%s: %s", op, err)
-			http.Error(w, "something went wrong", http.StatusInternalServerError)
-			return
+			userID = auth.GenerateUniqueUserID()
+			auth.SetUserIDCookie(w, userID)
 		}
 		// декодируем данные из тела запроса
 		var resp models.Response

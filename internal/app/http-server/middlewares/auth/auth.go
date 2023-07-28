@@ -13,10 +13,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// type contextKey string
-
-// var UserContextID contextKey = "userID"
-
 var secretKey = []byte("secret-key")
 var userIDCounter uint64
 
@@ -26,10 +22,10 @@ func AuthMiddleware(log *zap.SugaredLogger) func(next http.Handler) http.Handler
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			userID, err := GetUserIDFromCookie(r)
 			if err != nil {
-				userID = generateUniqueUserID()
+				userID = GenerateUniqueUserID()
 				SetUserIDCookie(w, userID)
 			}
-			_ = userID
+			SetUserIDCookie(w, userID)
 
 			next.ServeHTTP(w, r)
 		}
@@ -78,7 +74,7 @@ func GenerateSignature(userID string) string {
 	return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
 
-func generateUniqueUserID() string {
+func GenerateUniqueUserID() string {
 	atomic.AddUint64(&userIDCounter, 1)
 	return "user_" + strconv.FormatUint(userIDCounter, 10)
 }
