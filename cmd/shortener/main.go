@@ -43,7 +43,7 @@ func main() {
 		r.Get("/{id}", redirect.GetURLGetterHandler(log, storage, cfg))
 		r.Post("/api/shorten", apisave.PostSaveJSONHandler(log, storage, cfg))
 		r.Get("/ping", ping.GetPingDBHandler(log, storage, cfg))
-		r.Post("/api/shorten/batch", batchsave.PostBatchJSONhHandler(log, storage, cfg))
+		r.Post("/api/shorten/batch", logger.RequestBatchJSONLogger(batchsave.PostBatchJSONhHandler(log, storage, cfg)))
 		r.Get("/api/user/urls", userurls.GetURLsHandler(log, storage, cfg))
 		// r.Delete("/api/user/urls", handlers.DeleteShortURLs)
 	})
