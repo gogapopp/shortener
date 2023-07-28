@@ -71,9 +71,9 @@ func (s *storage) GetURL(shortURL, userID string) (string, error) {
 	return longURL, nil
 }
 
-func (s *storage) Ping() error {
+func (s *storage) Ping() (*sql.DB, error) {
 	err := s.db.Ping()
-	return err
+	return s.db, err
 }
 
 func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error {

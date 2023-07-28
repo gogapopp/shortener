@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"database/sql"
+
 	"github.com/gogapopp/shortener/internal/app/config"
 	"github.com/gogapopp/shortener/internal/app/lib/models"
 	"github.com/gogapopp/shortener/internal/app/storage/files"
@@ -13,7 +15,7 @@ type Storage interface {
 	GetURL(shortURL, userID string) (string, error)
 	GetShortURL(longURL string) string
 	BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error
-	Ping() error
+	Ping() (*sql.DB, error)
 	GetUserURLs(userID string) ([]models.UserURLs, error)
 }
 

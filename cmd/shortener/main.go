@@ -32,6 +32,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	db, err := storage.Ping()
+	if err == nil {
+		defer db.Close()
+	}
 
 	// подключаем роуты и мидлвееры
 	r := chi.NewRouter()

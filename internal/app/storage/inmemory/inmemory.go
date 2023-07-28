@@ -1,6 +1,7 @@
 package inmemory
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/gogapopp/shortener/internal/app/lib/models"
@@ -37,8 +38,8 @@ func (s *storage) GetURL(shortURL, userID string) (string, error) {
 	return longURL, nil
 }
 
-func (s *storage) Ping() error {
-	return fmt.Errorf("error ping DB")
+func (s *storage) Ping() (*sql.DB, error) {
+	return nil, fmt.Errorf("error ping DB")
 }
 
 func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error {

@@ -34,10 +34,5 @@ type BatchResponse struct {
 type UserURLs struct {
 	OriginalURL string `json:"original_url"`
 	ShortURL    string `json:"short_url"`
+	DeleteFlag  bool
 }
-
-// type URL struct {
-// 	OriginalURL string `json:"original_url"`
-// 	ShortURL    string `json:"short_url"`
-// 	DeleteFlag  bool
-// }
