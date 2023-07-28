@@ -83,7 +83,7 @@ func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse, userID str
 	values := []interface{}{}
 
 	for i, url := range urls {
-		query += fmt.Sprintf("($%d, $%d, $%d, $%d),", i*3+1, i*3+2, i*3+3, i*3+4)
+		query += fmt.Sprintf("($%d, $%d, $%d, $%d),", i*4+1, i*4+2, i*4+3, i*4+4)
 		values = append(values, url.ShortURL, url.OriginalURL, url.CorrelationID, userID)
 	}
 	// удаляем последнюю запятую и обновляем поля

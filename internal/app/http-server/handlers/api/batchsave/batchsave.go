@@ -51,6 +51,7 @@ func PostBatchJSONhHandler(log *zap.SugaredLogger, batchSaver BatchSaver, cfg *c
 				ShortURL:      BatchShortURL,
 				OriginalURL:   req[k].OriginalURL,
 				CorrelationID: req[k].CorrelationID,
+				UserID:        userID,
 			})
 			// собираем json ответ
 			resp = append(resp, models.BatchResponse{
