@@ -48,7 +48,7 @@ func NewStorage(fileStoragePath string) (*storage, error) {
 	}, nil
 }
 
-func (s *storage) SaveURL(longURL, shortURL, correlationID string) error {
+func (s *storage) SaveURL(longURL, shortURL, correlationID string, userID string) error {
 	const op = "storage.files.SaveURL"
 	s.urls[shortURL] = longURL
 	file, err := os.OpenFile(s.fileStoragePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -70,7 +70,7 @@ func (s *storage) SaveURL(longURL, shortURL, correlationID string) error {
 	return os.WriteFile(s.fileStoragePath, data, 0666)
 }
 
-func (s *storage) GetURL(shortURL string) (string, error) {
+func (s *storage) GetURL(shortURL, userID string) (string, error) {
 	for _, fileURL := range urlFileStorage {
 		s.urls[fileURL.ShortURL] = fileURL.OriginalURL
 	}
@@ -91,4 +91,8 @@ func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse) error {
 
 func (s *storage) GetShortURL(longURL string) string {
 	return ""
+}
+
+func (s *storage) GetUserURLs(userID string) ([]models.UserURLs, error) {
+	return nil, nil
 }

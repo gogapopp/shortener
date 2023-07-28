@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/gogapopp/shortener/internal/app/config"
+	"github.com/gogapopp/shortener/internal/app/http-server/middlewares/auth"
 	"github.com/gogapopp/shortener/internal/app/lib/models"
 	"github.com/gogapopp/shortener/internal/app/lib/urlshortener"
 	"github.com/gogapopp/shortener/internal/app/storage/postgres"
@@ -15,13 +16,20 @@ import (
 
 //go:generate mockgen -source=save.go -destination=mocks/mock.go
 type URLSaver interface {
-	SaveURL(longURL, shortURL, correlationID string) error
+	SaveURL(longURL, shortURL, correlationID string, userID string) error
 	GetShortURL(longURL string) string
 }
 
 func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.api.save.PostSaveJSONHandler"
+		// получаем userID из контекста который был установлен мидлвеером userIdentity
+		userID, err := auth.GetUserIDFromCookie(r)
+		if err != nil {
+			log.Infof("%s: %s", op, err)
+			http.Error(w, "something went wrong", http.StatusInternalServerError)
+			return
+		}
 		// декодируем данные из тела запроса
 		var resp models.Response
 		var req models.Request
@@ -31,7 +39,7 @@ func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.
 			return
 		}
 		// проверяем является ли ссылка переданная в body валидной
-		_, err := url.ParseRequestURI(req.URL)
+		_, err = url.ParseRequestURI(req.URL)
 		if err != nil {
 			log.Infof("%s: %s", op, err)
 			http.Error(w, "invalid request body", http.StatusBadRequest)
@@ -40,7 +48,7 @@ func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.
 		// делаем из обычной ссылки сжатую
 		shortURL := urlshortener.ShortenerURL(cfg.BaseAddr, req.URL)
 		// сохраняем короткую ссылку
-		err = urlSaver.SaveURL(req.URL, shortURL, "")
+		err = urlSaver.SaveURL(req.URL, shortURL, "", userID)
 		if err != nil {
 			log.Infof("%s: %s", op, err)
 			if errors.Is(postgres.ErrURLExists, err) {

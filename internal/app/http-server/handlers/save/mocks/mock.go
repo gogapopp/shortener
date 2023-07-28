@@ -48,15 +48,15 @@ func (mr *MockURLSaverMockRecorder) GetShortURL(longURL interface{}) *gomock.Cal
 }
 
 // SaveURL mocks base method.
-func (m *MockURLSaver) SaveURL(longURL, shortURL, correlationID string) error {
+func (m *MockURLSaver) SaveURL(longURL, shortURL, correlationID, userID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveURL", longURL, shortURL, correlationID)
+	ret := m.ctrl.Call(m, "SaveURL", longURL, shortURL, correlationID, userID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SaveURL indicates an expected call of SaveURL.
-func (mr *MockURLSaverMockRecorder) SaveURL(longURL, shortURL, correlationID interface{}) *gomock.Call {
+func (mr *MockURLSaverMockRecorder) SaveURL(longURL, shortURL, correlationID, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveURL", reflect.TypeOf((*MockURLSaver)(nil).SaveURL), longURL, shortURL, correlationID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveURL", reflect.TypeOf((*MockURLSaver)(nil).SaveURL), longURL, shortURL, correlationID, userID)
 }

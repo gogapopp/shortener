@@ -43,7 +43,8 @@ func TestPostSaveHandler(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockURLSaver := mock_save.NewMockURLSaver(mockCtrl)
-	mockURLSaver.EXPECT().SaveURL(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockURLSaver.EXPECT().SaveURL(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	mockURLSaver.EXPECT().GetShortURL(gomock.Any()).AnyTimes()
 
 	cfg := &config.Config{
 		BaseAddr: "http://localhost:8080/",

@@ -30,7 +30,8 @@ func NewStorage(databaseDSN string) (*storage, error) {
         id serial PRIMARY KEY,
         short_url TEXT,
         long_url TEXT,
-        correlation_id TEXT
+        correlation_id TEXT,
+		user_id TEXT
     );
     CREATE UNIQUE INDEX IF NOT EXISTS long_url_id ON urls(long_url);
 `)
@@ -43,9 +44,9 @@ func NewStorage(databaseDSN string) (*storage, error) {
 	}, nil
 }
 
-func (s *storage) SaveURL(longURL, shortURL, correlationID string) error {
+func (s *storage) SaveURL(longURL, shortURL, correlationID string, userID string) error {
 	const op = "storage.postgres.SaveURL"
-	result, err := s.db.Exec("INSERT INTO urls (short_url, long_url, correlation_id) VALUES ($1, $2, $3) ON CONFLICT (long_url) DO NOTHING", shortURL, longURL, correlationID)
+	result, err := s.db.Exec("INSERT INTO urls (short_url, long_url, correlation_id, user_id) VALUES ($1, $2, $3, $4) ON CONFLICT (long_url) DO NOTHING", shortURL, longURL, correlationID, userID)
 	if err != nil {
 		return fmt.Errorf("%s: %s", op, err)
 	}
@@ -59,10 +60,11 @@ func (s *storage) SaveURL(longURL, shortURL, correlationID string) error {
 	return nil
 }
 
-func (s *storage) GetURL(shortURL string) (string, error) {
+func (s *storage) GetURL(shortURL, userID string) (string, error) {
 	const op = "storage.postgres.GetURL"
 	var longURL string
-	row := s.db.QueryRow("SELECT long_url FROM urls WHERE short_url = $1", shortURL)
+	fmt.Println(shortURL, userID)
+	row := s.db.QueryRow("SELECT long_url FROM urls WHERE short_url = $1 AND user_id = $2", shortURL, userID)
 	err := row.Scan(&longURL)
 	if err != nil {
 		return "", fmt.Errorf("%s: %s", op, err)
@@ -103,4 +105,28 @@ func (s *storage) GetShortURL(longURL string) string {
 	row := s.db.QueryRow("SELECT short_url FROM urls WHERE long_url = $1", longURL)
 	row.Scan(&shortURL)
 	return shortURL
+}
+
+func (s *storage) GetUserURLs(userID string) ([]models.UserURLs, error) {
+	const op = "storage.postgres.GetUserURLs"
+	rows, err := s.db.Query("SELECT long_url, short_url FROM urls WHERE user_id = $1", userID)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %s", op, err)
+	}
+	defer rows.Close()
+
+	var urls []models.UserURLs
+	for rows.Next() {
+		var url models.UserURLs
+		if err := rows.Scan(&url.OriginalURL, &url.ShortURL); err != nil {
+			return nil, fmt.Errorf("%s: %s", op, err)
+		}
+		urls = append(urls, url)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("%s: %s", op, err)
+	}
+
+	return urls, nil
 }

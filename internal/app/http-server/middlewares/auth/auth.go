@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -14,9 +13,9 @@ import (
 	"go.uber.org/zap"
 )
 
-type contextKey string
+// type contextKey string
 
-const UserContextID = contextKey("user_id")
+// var UserContextID contextKey = "userID"
 
 var secretKey = []byte("secret-key")
 var userIDCounter uint64
@@ -30,8 +29,7 @@ func AuthMiddleware(log *zap.SugaredLogger) func(next http.Handler) http.Handler
 				userID = generateUniqueUserID()
 				SetUserIDCookie(w, userID)
 			}
-			ctx := context.WithValue(r.Context(), UserContextID, userID)
-			r = r.WithContext(ctx)
+
 			next.ServeHTTP(w, r)
 		}
 

@@ -16,12 +16,12 @@ func NewStorage() *storage {
 	}
 }
 
-func (s *storage) SaveURL(longURL, shortURL, correlationID string) error {
+func (s *storage) SaveURL(longURL, shortURL, correlationID string, userID string) error {
 	s.urls[shortURL] = longURL
 	return nil
 }
 
-func (s *storage) GetURL(shortURL string) (string, error) {
+func (s *storage) GetURL(shortURL, userID string) (string, error) {
 	longURL, ok := s.urls[shortURL]
 	if !ok {
 		return "", fmt.Errorf("url not found")
@@ -39,4 +39,8 @@ func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse) error {
 
 func (s *storage) GetShortURL(longURL string) string {
 	return ""
+}
+
+func (s *storage) GetUserURLs(userID string) ([]models.UserURLs, error) {
+	return nil, nil
 }
