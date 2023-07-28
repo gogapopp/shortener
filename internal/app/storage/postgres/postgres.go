@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/gogapopp/shortener/internal/app/lib/globalstore"
 	"github.com/gogapopp/shortener/internal/app/lib/models"
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
@@ -57,6 +58,7 @@ func (s *storage) SaveURL(longURL, shortURL, correlationID string, userID string
 	if rowsAffected == 0 {
 		return ErrURLExists
 	}
+	globalstore.GlobalStore.SaveURLToDatabase(userID, shortURL, longURL)
 	return nil
 }
 
@@ -85,6 +87,8 @@ func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse, userID str
 	for i, url := range urls {
 		query += fmt.Sprintf("($%d, $%d, $%d, $%d),", i*4+1, i*4+2, i*4+3, i*4+4)
 		values = append(values, url.ShortURL, url.OriginalURL, url.CorrelationID, userID)
+		// ...
+		globalstore.GlobalStore.SaveURLToDatabase(userID, url.ShortURL, url.OriginalURL)
 	}
 	// удаляем последнюю запятую и обновляем поля
 	query = query[:len(query)-1]
@@ -107,25 +111,29 @@ func (s *storage) GetShortURL(longURL string) string {
 }
 
 func (s *storage) GetUserURLs(userID string) ([]models.UserURLs, error) {
-	const op = "storage.postgres.GetUserURLs"
-	rows, err := s.db.Query("SELECT long_url, short_url FROM urls WHERE user_id = $1", userID)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %s", op, err)
-	}
-	defer rows.Close()
+	// const op = "storage.postgres.GetUserURLs"
+	// rows, err := s.db.Query("SELECT long_url, short_url FROM urls WHERE user_id = $1", userID)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("%s: %s", op, err)
+	// }
+	// defer rows.Close()
 
-	var urls []models.UserURLs
-	for rows.Next() {
-		var url models.UserURLs
-		if err := rows.Scan(&url.OriginalURL, &url.ShortURL); err != nil {
-			return nil, fmt.Errorf("%s: %s", op, err)
-		}
-		urls = append(urls, url)
-	}
+	// var urls []models.UserURLs
+	// for rows.Next() {
+	// 	var url models.UserURLs
+	// 	if err := rows.Scan(&url.OriginalURL, &url.ShortURL); err != nil {
+	// 		return nil, fmt.Errorf("%s: %s", op, err)
+	// 	}
+	// 	urls = append(urls, url)
+	// }
 
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("%s: %s", op, err)
-	}
+	// if err := rows.Err(); err != nil {
+	// 	return nil, fmt.Errorf("%s: %s", op, err)
+	// }
 
+	// return urls, nil
+
+	// получаем все сокращенные пользователем URL из базы данных
+	urls := globalstore.GlobalStore.GetURLsFromDatabase(userID)
 	return urls, nil
 }
