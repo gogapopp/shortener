@@ -2,12 +2,15 @@ package save
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 
 	"github.com/gogapopp/shortener/internal/app/config"
 	"github.com/gogapopp/shortener/internal/app/lib/models"
 	"github.com/gogapopp/shortener/internal/app/lib/urlshortener"
+	"github.com/gogapopp/shortener/internal/app/storage/postgres"
 	"go.uber.org/zap"
 )
 
@@ -39,6 +42,11 @@ func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.
 		err = urlSaver.SaveURL(req.URL, shortURL, "")
 		if err != nil {
 			log.Infof("%s: %s", op, err)
+			fmt.Printf("%T", err)
+			if errors.Is(postgres.ErrURLExists, err) {
+				http.Error(w, "long url already exists", http.StatusConflict)
+				return
+			}
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}

@@ -1,6 +1,7 @@
 package save
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/gogapopp/shortener/internal/app/config"
 	"github.com/gogapopp/shortener/internal/app/lib/urlshortener"
+	"github.com/gogapopp/shortener/internal/app/storage/postgres"
 	"go.uber.org/zap"
 )
 
@@ -40,6 +42,10 @@ func PostSaveHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.Conf
 		err = urlSaver.SaveURL(bodyURL, shortURL, "")
 		if err != nil {
 			log.Infof("%s: %s", op, err)
+			if errors.Is(postgres.ErrURLExists, err) {
+				http.Error(w, "long url already exists", http.StatusConflict)
+				return
+			}
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}

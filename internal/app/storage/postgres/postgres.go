@@ -67,7 +67,7 @@ func (s *storage) GetURL(shortURL string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("%s: %s", op, err)
 	}
-	return shortURL, nil
+	return longURL, nil
 }
 
 func (s *storage) Ping() error {
@@ -87,6 +87,7 @@ func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse) error {
 	}
 	// удаляем последнюю запятую и обновляем поля
 	query = query[:len(query)-1]
+	query = fmt.Sprintf("%sON CONFLICT (long_url) DO NOTHING", query)
 
 	// выполняем запрос
 	_, err := s.db.Exec(query, values...)

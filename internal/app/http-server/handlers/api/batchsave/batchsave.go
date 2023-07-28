@@ -54,7 +54,7 @@ func PostBatchJSONhHandler(log *zap.SugaredLogger, batchSaver BatchSaver, cfg *c
 		err := batchSaver.BatchInsertURL(databaseResp)
 		if err != nil {
 			log.Infof("%s: %s", op, err)
-			http.Error(w, "long url already exists", http.StatusConflict)
+			http.Error(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}
 		// устанавливаем заголовок Content-Type и отправляем ответ
