@@ -6,18 +6,25 @@ import (
 	"net/url"
 
 	"github.com/gogapopp/shortener/internal/app/config"
+	"github.com/gogapopp/shortener/internal/app/http-server/middlewares/auth"
 	"github.com/gogapopp/shortener/internal/app/lib/models"
 	"github.com/gogapopp/shortener/internal/app/lib/urlshortener"
 	"go.uber.org/zap"
 )
 
 type BatchSaver interface {
-	BatchInsertURL(urls []models.BatchDatabaseResponse) error
+	BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error
 }
 
 func PostBatchJSONhHandler(log *zap.SugaredLogger, batchSaver BatchSaver, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.api.save.PostBatchJSONhHandler"
+		// получаем userID из контекста который был установлен мидлвеером userIdentity
+		userID, err := auth.GetUserIDFromCookie(r)
+		if err != nil {
+			userID = auth.GenerateUniqueUserID()
+			auth.SetUserIDCookie(w, userID)
+		}
 		var req []models.BatchRequest
 		var resp []models.BatchResponse
 		var databaseResp []models.BatchDatabaseResponse
@@ -51,7 +58,7 @@ func PostBatchJSONhHandler(log *zap.SugaredLogger, batchSaver BatchSaver, cfg *c
 				CorrelationID: req[k].CorrelationID,
 			})
 		}
-		err := batchSaver.BatchInsertURL(databaseResp)
+		err = batchSaver.BatchInsertURL(databaseResp, userID)
 		if err != nil {
 			log.Infof("%s: %s", op, err)
 			http.Error(w, "something went wrong", http.StatusInternalServerError)

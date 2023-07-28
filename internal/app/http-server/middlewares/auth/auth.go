@@ -65,6 +65,7 @@ func SetUserIDCookie(w http.ResponseWriter, userID string) {
 	http.SetCookie(w, &http.Cookie{
 		Name:  "user_id",
 		Value: value,
+		Path:  "/",
 	})
 }
 

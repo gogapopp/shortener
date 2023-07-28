@@ -12,7 +12,7 @@ type Storage interface {
 	SaveURL(longURL, shortURL, correlationID string, userID string) error
 	GetURL(shortURL, userID string) (string, error)
 	GetShortURL(longURL string) string
-	BatchInsertURL(urls []models.BatchDatabaseResponse) error
+	BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error
 	Ping() error
 	GetUserURLs(userID string) ([]models.UserURLs, error)
 }

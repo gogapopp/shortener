@@ -85,7 +85,7 @@ func (s *storage) Ping() error {
 	return fmt.Errorf("error ping DB")
 }
 
-func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse) error {
+func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error {
 	return nil
 }
 

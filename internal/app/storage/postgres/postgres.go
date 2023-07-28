@@ -76,15 +76,15 @@ func (s *storage) Ping() error {
 	return err
 }
 
-func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse) error {
+func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error {
 	const op = "storage.postgres.BatchInsertURL"
 	// собираем запрос
-	query := "INSERT INTO urls (short_url, long_url, correlation_id) VALUES "
+	query := "INSERT INTO urls (short_url, long_url, correlation_id, user_id) VALUES "
 	values := []interface{}{}
 
 	for i, url := range urls {
-		query += fmt.Sprintf("($%d, $%d, $%d),", i*3+1, i*3+2, i*3+3)
-		values = append(values, url.ShortURL, url.OriginalURL, url.CorrelationID)
+		query += fmt.Sprintf("($%d, $%d, $%d, $%d),", i*3+1, i*3+2, i*3+3, i*3+4)
+		values = append(values, url.ShortURL, url.OriginalURL, url.CorrelationID, userID)
 	}
 	// удаляем последнюю запятую и обновляем поля
 	query = query[:len(query)-1]
