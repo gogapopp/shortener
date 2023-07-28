@@ -96,3 +96,11 @@ func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse) error {
 	}
 	return nil
 }
+
+func (s *storage) GetShortURL(longURL string) string {
+	const op = "storage.postgres.GetURL"
+	var shortURL string
+	row := s.db.QueryRow("SELECT short_url FROM urls WHERE long_url = $1", longURL)
+	row.Scan(&shortURL)
+	return shortURL
+}

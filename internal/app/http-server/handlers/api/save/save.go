@@ -3,7 +3,6 @@ package save
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 
@@ -14,15 +13,17 @@ import (
 	"go.uber.org/zap"
 )
 
+//go:generate mockgen -source=save.go -destination=mocks/mock.go
 type URLSaver interface {
 	SaveURL(longURL, shortURL, correlationID string) error
+	GetShortURL(longURL string) string
 }
 
-//go:generate mockgen -source=save.go -destination=mocks/mock.go
 func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.api.save.PostSaveJSONHandler"
 		// декодируем данные из тела запроса
+		var resp models.Response
 		var req models.Request
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			log.Infof("%s: %s", op, err)
@@ -42,16 +43,24 @@ func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.
 		err = urlSaver.SaveURL(req.URL, shortURL, "")
 		if err != nil {
 			log.Infof("%s: %s", op, err)
-			fmt.Printf("%T", err)
 			if errors.Is(postgres.ErrURLExists, err) {
-				http.Error(w, "long url already exists", http.StatusConflict)
+				shortURL := urlSaver.GetShortURL(req.URL)
+				// передаём значение в ответ
+				resp.ShortURL = shortURL
+				// устанавливаем заголовок Content-Type и отправляем ответ
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusCreated)
+				if err := json.NewEncoder(w).Encode(resp); err != nil {
+					log.Infof("%s: %s", op, err)
+					http.Error(w, "something went wrong", http.StatusInternalServerError)
+					return
+				}
 				return
 			}
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}
 		// передаём значение в ответ
-		var resp models.Response
 		resp.ShortURL = shortURL
 		// устанавливаем заголовок Content-Type и отправляем ответ
 		w.Header().Set("Content-Type", "application/json")

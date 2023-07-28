@@ -11,8 +11,9 @@ import (
 type Storage interface {
 	SaveURL(longURL, shortURL, correlationID string) error
 	GetURL(shortURL string) (string, error)
-	Ping() error
+	GetShortURL(longURL string) string
 	BatchInsertURL(urls []models.BatchDatabaseResponse) error
+	Ping() error
 }
 
 func NewRepo(cfg *config.Config) (Storage, error) {

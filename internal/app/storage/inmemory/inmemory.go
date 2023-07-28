@@ -36,3 +36,7 @@ func (s *storage) Ping() error {
 func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse) error {
 	return nil
 }
+
+func (s *storage) GetShortURL(longURL string) string {
+	return ""
+}

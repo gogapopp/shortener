@@ -16,6 +16,7 @@ import (
 //go:generate mockgen -source=save.go -destination=mocks/mock.go
 type URLSaver interface {
 	SaveURL(longURL, shortURL, correlationID string) error
+	GetShortURL(longURL string) string
 }
 
 func PostSaveHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.Config) http.HandlerFunc {
@@ -43,7 +44,10 @@ func PostSaveHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.Conf
 		if err != nil {
 			log.Infof("%s: %s", op, err)
 			if errors.Is(postgres.ErrURLExists, err) {
-				http.Error(w, "long url already exists", http.StatusConflict)
+				shortURL := urlSaver.GetShortURL(bodyURL)
+				w.Header().Set("Content-Type", "text/plain")
+				w.WriteHeader(http.StatusConflict)
+				fmt.Fprint(w, shortURL)
 				return
 			}
 			http.Error(w, "something went wrong", http.StatusInternalServerError)

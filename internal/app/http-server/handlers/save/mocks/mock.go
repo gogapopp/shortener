@@ -33,6 +33,20 @@ func (m *MockURLSaver) EXPECT() *MockURLSaverMockRecorder {
 	return m.recorder
 }
 
+// GetShortURL mocks base method.
+func (m *MockURLSaver) GetShortURL(longURL string) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetShortURL", longURL)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetShortURL indicates an expected call of GetShortURL.
+func (mr *MockURLSaverMockRecorder) GetShortURL(longURL interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetShortURL", reflect.TypeOf((*MockURLSaver)(nil).GetShortURL), longURL)
+}
+
 // SaveURL mocks base method.
 func (m *MockURLSaver) SaveURL(longURL, shortURL, correlationID string) error {
 	m.ctrl.T.Helper()
