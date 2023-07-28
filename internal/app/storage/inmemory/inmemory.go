@@ -19,12 +19,12 @@ func (s *storage) SaveURL(baseURL, longURL, shortURL, correlationID string) erro
 	return nil
 }
 
-func (s *storage) GetURL(longURL string) (string, error) {
-	shortURL, ok := s.urls[longURL]
+func (s *storage) GetURL(shortURL string) (string, error) {
+	longURL, ok := s.urls[shortURL]
 	if !ok {
 		return "", fmt.Errorf("url not found")
 	}
-	return shortURL, nil
+	return longURL, nil
 }
 
 func (s *storage) Ping() error {

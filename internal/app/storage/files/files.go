@@ -70,15 +70,15 @@ func (s *storage) SaveURL(baseURL, longURL, shortURL, correlationID string) erro
 	return os.WriteFile(s.fileStoragePath, data, 0666)
 }
 
-func (s *storage) GetURL(longURL string) (string, error) {
+func (s *storage) GetURL(shortURL string) (string, error) {
 	for _, fileURL := range urlFileStorage {
 		s.urls[fileURL.ShortURL] = fileURL.OriginalURL
 	}
-	shortURL, ok := s.urls[longURL]
+	longURL, ok := s.urls[shortURL]
 	if !ok {
 		return "", fmt.Errorf("url not found")
 	}
-	return shortURL, nil
+	return longURL, nil
 }
 
 func (s *storage) Ping() error {

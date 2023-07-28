@@ -9,7 +9,7 @@ import (
 
 type Storage interface {
 	SaveURL(baseURL, longURL, shortURL, correlationID string) error
-	GetURL(longURL string) (string, error)
+	GetURL(shortURL string) (string, error)
 	Ping() error
 }
 
