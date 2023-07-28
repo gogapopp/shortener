@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"net/http"
 	_ "net/http/pprof"
 
@@ -19,7 +18,6 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
 	// парсим конфиг
 	cfg := config.ParseConfig()
 	// инициализируем логер
@@ -28,7 +26,7 @@ func main() {
 		log.Fatal(err)
 	}
 	// подключаем хранилище
-	storage, err := storage.NewRepo(ctx, cfg)
+	storage, err := storage.NewRepo(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}

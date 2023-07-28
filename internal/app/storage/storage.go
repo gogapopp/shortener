@@ -1,8 +1,6 @@
 package storage
 
 import (
-	"context"
-
 	"github.com/gogapopp/shortener/internal/app/config"
 	"github.com/gogapopp/shortener/internal/app/storage/files"
 	"github.com/gogapopp/shortener/internal/app/storage/inmemory"
@@ -15,7 +13,7 @@ type Storage interface {
 	Ping() error
 }
 
-func NewRepo(ctx context.Context, cfg *config.Config) (Storage, error) {
+func NewRepo(cfg *config.Config) (Storage, error) {
 	switch {
 	case cfg.DatabasePath != "":
 		return postgres.NewStorage(cfg.DatabasePath)

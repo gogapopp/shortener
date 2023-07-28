@@ -24,13 +24,7 @@ func NewStorage(databaseDSN string) (*storage, error) {
 		return nil, fmt.Errorf("%s: %s", op, err)
 	}
 
-	tx, err := db.Begin()
-	if err != nil {
-		return nil, fmt.Errorf("%s: %s", op, err)
-	}
-	defer tx.Rollback()
-
-	_, err = tx.Exec(`
+	_, err = db.Exec(`
     CREATE TABLE IF NOT EXISTS urls (
         id serial PRIMARY KEY,
         short_url TEXT,
@@ -45,7 +39,7 @@ func NewStorage(databaseDSN string) (*storage, error) {
 
 	return &storage{
 		db: db,
-	}, tx.Commit()
+	}, nil
 }
 
 func (s *storage) SaveURL(baseURL, longURL, shortURL, correlationID string) error {
