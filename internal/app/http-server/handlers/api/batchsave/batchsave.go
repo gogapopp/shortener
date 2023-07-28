@@ -35,7 +35,6 @@ func PostBatchJSONhHandler(log *zap.SugaredLogger, batchSaver BatchSaver, cfg *c
 		}
 		// начинаем проходить по реквесту
 		for k := range req {
-			log.Info(req[k])
 			// проверяем является ли переданное значение ссылкой
 			_, err := url.ParseRequestURI(req[k].OriginalURL)
 			if err != nil {
