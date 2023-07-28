@@ -21,9 +21,8 @@ func GetURLsHandler(log *zap.SugaredLogger, userURLsGetter UserURLsGetter, cfg *
 		// получаем userID из контекста который был установлен мидлвеером userIdentity
 		userID, err := auth.GetUserIDFromCookie(r)
 		if err != nil {
-			log.Infof("%s: %s", op, err)
-			http.Error(w, "something went wrong", http.StatusInternalServerError)
-			return
+			userID = auth.GenerateUniqueUserID()
+			auth.SetUserIDCookie(w, userID)
 		}
 		// получает ссылки из хранилища
 		userURLs, err := userURLsGetter.GetUserURLs(userID)
