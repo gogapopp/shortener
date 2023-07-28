@@ -20,7 +20,7 @@ func GetURLGetterHandler(log *zap.SugaredLogger, urlGetter URLGetter, cfg *confi
 		// получает ссылку из хранилища
 		shortURL, err := urlGetter.GetURL(url)
 		if err != nil {
-			log.Info(fmt.Sprintf("%s: %s", op, err))
+			log.Infof("%s: %s", op, err)
 			http.Error(w, "url not found", http.StatusBadRequest)
 			return
 		}

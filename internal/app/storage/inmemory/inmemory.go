@@ -2,23 +2,19 @@ package inmemory
 
 import (
 	"fmt"
-
-	"go.uber.org/zap"
 )
 
 type storage struct {
-	log  *zap.SugaredLogger
 	urls map[string]string
 }
 
-func NewStorage(log *zap.SugaredLogger) *storage {
+func NewStorage() *storage {
 	return &storage{
-		log:  log,
 		urls: make(map[string]string),
 	}
 }
 
-func (s *storage) SaveURL(baseURL, longURL, shortURL string) error {
+func (s *storage) SaveURL(baseURL, longURL, shortURL, correlationID string) error {
 	s.urls[shortURL] = longURL
 	return nil
 }

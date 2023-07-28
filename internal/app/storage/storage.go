@@ -7,23 +7,22 @@ import (
 	"github.com/gogapopp/shortener/internal/app/storage/files"
 	"github.com/gogapopp/shortener/internal/app/storage/inmemory"
 	"github.com/gogapopp/shortener/internal/app/storage/postgres"
-	"go.uber.org/zap"
 )
 
 type Storage interface {
-	SaveURL(baseURL, longURL, shortURL string) error
+	SaveURL(baseURL, longURL, shortURL, correlationID string) error
 	GetURL(longURL string) (string, error)
 	Ping() error
 }
 
-func NewRepo(ctx context.Context, cfg *config.Config, log *zap.SugaredLogger) (Storage, error) {
+func NewRepo(ctx context.Context, cfg *config.Config) (Storage, error) {
 	switch {
 	case cfg.DatabasePath != "":
-		return postgres.NewStorage(ctx, cfg.DatabasePath, log)
+		return postgres.NewStorage(cfg.DatabasePath)
 	case cfg.FileStoragePath != "":
-		return files.NewStorage(cfg.FileStoragePath, log)
+		return files.NewStorage(cfg.FileStoragePath)
 	default:
-		return inmemory.NewStorage(log), nil
+		return inmemory.NewStorage(), nil
 	}
 
 }

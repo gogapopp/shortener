@@ -2,7 +2,6 @@ package save
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 
@@ -13,7 +12,7 @@ import (
 )
 
 type URLSaver interface {
-	SaveURL(baseURL, longURL, shortURL string) error
+	SaveURL(baseURL, longURL, shortURL, correlationID string) error
 }
 
 //go:generate mockgen -source=save.go -destination=mocks/mock.go
@@ -23,23 +22,23 @@ func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.
 		// декодируем данные из тела запроса
 		var req models.Request
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			log.Info(fmt.Sprintf("%s: %s", op, err))
+			log.Infof("%s: %s", op, err)
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}
 		// проверяем является ли ссылка переданная в body валидной
 		_, err := url.ParseRequestURI(req.URL)
 		if err != nil {
-			log.Info(fmt.Sprintf("%s: %s", op, err))
+			log.Infof("%s: %s", op, err)
 			http.Error(w, "invalid request body", http.StatusBadRequest)
 			return
 		}
 		// делаем из обычной ссылки сжатую
 		shortURL := urlshortener.ShortenerURL(cfg.BaseAddr, req.URL)
 		// сохраняем короткую ссылку
-		err = urlSaver.SaveURL(cfg.BaseAddr, req.URL, shortURL)
+		err = urlSaver.SaveURL(cfg.BaseAddr, req.URL, shortURL, "")
 		if err != nil {
-			log.Info(fmt.Sprintf("%s: %s", op, err))
+			log.Infof("%s: %s", op, err)
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}
@@ -50,7 +49,7 @@ func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
-			log.Info(fmt.Sprintf("%s: %s", op, err))
+			log.Infof("%s: %s", op, err)
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}
