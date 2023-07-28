@@ -44,6 +44,7 @@ func PostSaveHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.Conf
 			http.Error(w, "invalid request body", http.StatusBadRequest)
 			return
 		}
+		log.Infof("%s", body)
 		// делаем из обычной ссылки сжатую
 		shortURL := urlshortener.ShortenerURL(cfg.BaseAddr, bodyURL)
 		// сохраняем короткую ссылку
