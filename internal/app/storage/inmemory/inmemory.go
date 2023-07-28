@@ -50,6 +50,7 @@ func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse, userID str
 			OriginalURL: url.OriginalURL,
 			ShortURL:    url.ShortURL,
 		})
+		s.urls[url.ShortURL] = url.OriginalURL
 	}
 	return nil
 }
