@@ -8,13 +8,12 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"sync/atomic"
 
 	"go.uber.org/zap"
 )
 
 var secretKey = []byte("secret-key")
-var userIDCounter uint64
+var nextUserID = 0
 
 func AuthMiddleware(log *zap.SugaredLogger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -76,6 +75,6 @@ func GenerateSignature(userID string) string {
 }
 
 func GenerateUniqueUserID() string {
-	atomic.AddUint64(&userIDCounter, 1)
-	return "user_" + strconv.FormatUint(userIDCounter, 10)
+	nextUserID++
+	return strconv.Itoa(nextUserID)
 }
