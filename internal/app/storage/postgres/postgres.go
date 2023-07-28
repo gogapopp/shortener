@@ -77,24 +77,25 @@ func (s *storage) Ping() error {
 }
 
 func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error {
-	const op = "storage.postgres.BatchInsertURL"
-	// собираем запрос
-	query := "INSERT INTO urls (short_url, long_url, correlation_id, user_id) VALUES "
-	values := []interface{}{}
+	// const op = "storage.postgres.BatchInsertURL"
+	// // собираем запрос
+	// query := "INSERT INTO urls (short_url, long_url, correlation_id, user_id) VALUES "
+	// values := []interface{}{}
 
-	for i, url := range urls {
-		query += fmt.Sprintf("($%d, $%d, $%d, $%d),", i*4+1, i*4+2, i*4+3, i*4+4)
-		values = append(values, url.ShortURL, url.OriginalURL, url.CorrelationID, userID)
-	}
-	// удаляем последнюю запятую и обновляем поля
-	query = query[:len(query)-1]
-	query = fmt.Sprintf("%sON CONFLICT (long_url) DO NOTHING", query)
+	// for i, url := range urls {
+	// 	query += fmt.Sprintf("($%d, $%d, $%d, $%d),", i*4+1, i*4+2, i*4+3, i*4+4)
+	// 	values = append(values, url.ShortURL, url.OriginalURL, url.CorrelationID, userID)
+	// }
+	// // удаляем последнюю запятую и обновляем поля
+	// query = query[:len(query)-1]
+	// query = fmt.Sprintf("%sON CONFLICT (long_url) DO NOTHING", query)
 
-	// выполняем запрос
-	_, err := s.db.Exec(query, values...)
-	if err != nil {
-		return fmt.Errorf("%s: %s", op, err)
-	}
+	// // выполняем запрос
+	// _, err := s.db.Exec(query, values...)
+	// if err != nil {
+	// 	return fmt.Errorf("%s: %s", op, err)
+	// }
+	// return nil
 	return nil
 }
 
@@ -107,25 +108,26 @@ func (s *storage) GetShortURL(longURL string) string {
 }
 
 func (s *storage) GetUserURLs(userID string) ([]models.UserURLs, error) {
-	const op = "storage.postgres.GetUserURLs"
-	rows, err := s.db.Query("SELECT long_url, short_url FROM urls WHERE user_id = $1", userID)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %s", op, err)
-	}
-	defer rows.Close()
+	// const op = "storage.postgres.GetUserURLs"
+	// rows, err := s.db.Query("SELECT long_url, short_url FROM urls WHERE user_id = $1", userID)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("%s: %s", op, err)
+	// }
+	// defer rows.Close()
 
-	var urls []models.UserURLs
-	for rows.Next() {
-		var url models.UserURLs
-		if err := rows.Scan(&url.OriginalURL, &url.ShortURL); err != nil {
-			return nil, fmt.Errorf("%s: %s", op, err)
-		}
-		urls = append(urls, url)
-	}
+	// var urls []models.UserURLs
+	// for rows.Next() {
+	// 	var url models.UserURLs
+	// 	if err := rows.Scan(&url.OriginalURL, &url.ShortURL); err != nil {
+	// 		return nil, fmt.Errorf("%s: %s", op, err)
+	// 	}
+	// 	urls = append(urls, url)
+	// }
 
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("%s: %s", op, err)
-	}
+	// if err := rows.Err(); err != nil {
+	// 	return nil, fmt.Errorf("%s: %s", op, err)
+	// }
 
-	return urls, nil
+	// return urls, nil
+	return nil, nil
 }

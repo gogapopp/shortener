@@ -7,12 +7,20 @@ import (
 )
 
 type storage struct {
-	urls map[string]string
+	urls      map[string]string
+	urlsBatch map[string][]struct {
+		OriginalURL string
+		ShortURL    string
+	}
 }
 
 func NewStorage() *storage {
 	return &storage{
 		urls: make(map[string]string),
+		urlsBatch: make(map[string][]struct {
+			OriginalURL string
+			ShortURL    string
+		}),
 	}
 }
 
@@ -34,6 +42,15 @@ func (s *storage) Ping() error {
 }
 
 func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error {
+	for _, url := range urls {
+		s.urlsBatch[userID] = append(s.urlsBatch[userID], struct {
+			OriginalURL string
+			ShortURL    string
+		}{
+			OriginalURL: url.OriginalURL,
+			ShortURL:    url.ShortURL,
+		})
+	}
 	return nil
 }
 
@@ -42,5 +59,12 @@ func (s *storage) GetShortURL(longURL string) string {
 }
 
 func (s *storage) GetUserURLs(userID string) ([]models.UserURLs, error) {
-	return nil, nil
+	var result []models.UserURLs
+	for _, url := range s.urlsBatch[userID] {
+		result = append(result, models.UserURLs{
+			OriginalURL: url.OriginalURL,
+			ShortURL:    url.ShortURL,
+		})
+	}
+	return result, nil
 }

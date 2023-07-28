@@ -37,7 +37,6 @@ func GetURLsHandler(log *zap.SugaredLogger, userURLsGetter UserURLsGetter, cfg *
 		}
 		// устанавливаем заголовок Content-Type и отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
-		log.Info(userURLs)
 		if err := json.NewEncoder(w).Encode(userURLs); err != nil {
 			log.Infof("%s: %s", op, err)
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
