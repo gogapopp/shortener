@@ -12,7 +12,7 @@ import (
 )
 
 type URLSaver interface {
-	SaveURL(baseURL, longURL, shortURL, correlationID string) error
+	SaveURL(longURL, shortURL, correlationID string) error
 }
 
 //go:generate mockgen -source=save.go -destination=mocks/mock.go
@@ -36,7 +36,7 @@ func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.
 		// делаем из обычной ссылки сжатую
 		shortURL := urlshortener.ShortenerURL(cfg.BaseAddr, req.URL)
 		// сохраняем короткую ссылку
-		err = urlSaver.SaveURL(cfg.BaseAddr, req.URL, shortURL, "")
+		err = urlSaver.SaveURL(req.URL, shortURL, "")
 		if err != nil {
 			log.Infof("%s: %s", op, err)
 			http.Error(w, "something went wrong", http.StatusInternalServerError)

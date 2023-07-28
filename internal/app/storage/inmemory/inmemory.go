@@ -2,6 +2,8 @@ package inmemory
 
 import (
 	"fmt"
+
+	"github.com/gogapopp/shortener/internal/app/lib/models"
 )
 
 type storage struct {
@@ -14,7 +16,7 @@ func NewStorage() *storage {
 	}
 }
 
-func (s *storage) SaveURL(baseURL, longURL, shortURL, correlationID string) error {
+func (s *storage) SaveURL(longURL, shortURL, correlationID string) error {
 	s.urls[shortURL] = longURL
 	return nil
 }
@@ -29,4 +31,8 @@ func (s *storage) GetURL(shortURL string) (string, error) {
 
 func (s *storage) Ping() error {
 	return fmt.Errorf("error ping DB")
+}
+
+func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse) error {
+	return nil
 }

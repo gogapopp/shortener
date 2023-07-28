@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/gogapopp/shortener/internal/app/lib/models"
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
@@ -42,7 +43,7 @@ func NewStorage(databaseDSN string) (*storage, error) {
 	}, nil
 }
 
-func (s *storage) SaveURL(baseURL, longURL, shortURL, correlationID string) error {
+func (s *storage) SaveURL(longURL, shortURL, correlationID string) error {
 	const op = "storage.postgres.SaveURL"
 	result, err := s.db.Exec("INSERT INTO urls (short_url, long_url, correlation_id) VALUES ($1, $2, $3) ON CONFLICT (long_url) DO NOTHING", shortURL, longURL, correlationID)
 	if err != nil {
@@ -72,4 +73,25 @@ func (s *storage) GetURL(shortURL string) (string, error) {
 func (s *storage) Ping() error {
 	err := s.db.Ping()
 	return err
+}
+
+func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse) error {
+	const op = "storage.postgres.BatchInsertURL"
+	// собираем запрос
+	query := "INSERT INTO urls (short_url, long_url, correlation_id) VALUES "
+	values := []interface{}{}
+
+	for i, url := range urls {
+		query += fmt.Sprintf("($%d, $%d, $%d),", i*3+1, i*3+2, i*3+3)
+		values = append(values, url.ShortURL, url.OriginalURL, url.CorrelationID)
+	}
+	// удаляем последнюю запятую и обновляем поля
+	query = query[:len(query)-1]
+
+	// выполняем запрос
+	_, err := s.db.Exec(query, values...)
+	if err != nil {
+		return fmt.Errorf("%s: %s", op, err)
+	}
+	return nil
 }

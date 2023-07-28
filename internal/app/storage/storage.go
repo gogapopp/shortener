@@ -2,15 +2,17 @@ package storage
 
 import (
 	"github.com/gogapopp/shortener/internal/app/config"
+	"github.com/gogapopp/shortener/internal/app/lib/models"
 	"github.com/gogapopp/shortener/internal/app/storage/files"
 	"github.com/gogapopp/shortener/internal/app/storage/inmemory"
 	"github.com/gogapopp/shortener/internal/app/storage/postgres"
 )
 
 type Storage interface {
-	SaveURL(baseURL, longURL, shortURL, correlationID string) error
+	SaveURL(longURL, shortURL, correlationID string) error
 	GetURL(shortURL string) (string, error)
 	Ping() error
+	BatchInsertURL(urls []models.BatchDatabaseResponse) error
 }
 
 func NewRepo(cfg *config.Config) (Storage, error) {
