@@ -29,6 +29,7 @@ func AuthMiddleware(log *zap.SugaredLogger) func(next http.Handler) http.Handler
 				userID = generateUniqueUserID()
 				SetUserIDCookie(w, userID)
 			}
+			_ = userID
 
 			next.ServeHTTP(w, r)
 		}

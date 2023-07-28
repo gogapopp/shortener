@@ -64,6 +64,11 @@ func TestPostSaveHandler(t *testing.T) {
 				t.Fatal(err)
 			}
 			req.Header.Set("Content-Type", "application/json")
+			cookie := &http.Cookie{
+				Name:  "user_id",
+				Value: "user_1|dXYCnu4AZYELoxU2SrRL6OEXUqvQ8+4SOD9Q/Rw0dxI=",
+			}
+			req.AddCookie(cookie)
 
 			w := httptest.NewRecorder()
 			handler.ServeHTTP(w, req)

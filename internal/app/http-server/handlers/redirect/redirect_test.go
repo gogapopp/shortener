@@ -59,6 +59,11 @@ func TestGetURLGetterHandler(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			cookie := &http.Cookie{
+				Name:  "user_id",
+				Value: "user_1|dXYCnu4AZYELoxU2SrRL6OEXUqvQ8+4SOD9Q/Rw0dxI=",
+			}
+			req.AddCookie(cookie)
 
 			w := httptest.NewRecorder()
 			handler(w, req)
