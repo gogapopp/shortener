@@ -107,26 +107,25 @@ func (s *storage) GetShortURL(longURL string) string {
 }
 
 func (s *storage) GetUserURLs(userID string) ([]models.UserURLs, error) {
-	// const op = "storage.postgres.GetUserURLs"
-	// rows, err := s.db.Query("SELECT long_url, short_url FROM urls WHERE user_id = $1", userID)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("%s: %s", op, err)
-	// }
-	// defer rows.Close()
+	const op = "storage.postgres.GetUserURLs"
+	rows, err := s.db.Query("SELECT long_url, short_url FROM urls WHERE user_id = $1", userID)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %s", op, err)
+	}
+	defer rows.Close()
 
-	// var urls []models.UserURLs
-	// for rows.Next() {
-	// 	var url models.UserURLs
-	// 	if err := rows.Scan(&url.OriginalURL, &url.ShortURL); err != nil {
-	// 		return nil, fmt.Errorf("%s: %s", op, err)
-	// 	}
-	// 	urls = append(urls, url)
-	// }
+	var urls []models.UserURLs
+	for rows.Next() {
+		var url models.UserURLs
+		if err := rows.Scan(&url.OriginalURL, &url.ShortURL); err != nil {
+			return nil, fmt.Errorf("%s: %s", op, err)
+		}
+		urls = append(urls, url)
+	}
 
-	// if err := rows.Err(); err != nil {
-	// 	return nil, fmt.Errorf("%s: %s", op, err)
-	// }
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("%s: %s", op, err)
+	}
 
-	// return urls, nil
-	return nil, nil
+	return urls, nil
 }
