@@ -71,15 +71,15 @@ func (s *storage) SaveURL(longURL, shortURL, correlationID string, userID string
 	return os.WriteFile(s.fileStoragePath, data, 0666)
 }
 
-func (s *storage) GetURL(shortURL, userID string) (string, error) {
+func (s *storage) GetURL(shortURL, userID string) (bool, string, error) {
 	for _, fileURL := range urlFileStorage {
 		s.urls[fileURL.ShortURL] = fileURL.OriginalURL
 	}
 	longURL, ok := s.urls[shortURL]
 	if !ok {
-		return "", fmt.Errorf("url not found")
+		return false, "", fmt.Errorf("url not found")
 	}
-	return longURL, nil
+	return false, longURL, nil
 }
 
 func (s *storage) Ping() (*sql.DB, error) {
@@ -96,4 +96,8 @@ func (s *storage) GetShortURL(longURL string) string {
 
 func (s *storage) GetUserURLs(userID string) ([]models.UserURLs, error) {
 	return nil, nil
+}
+
+func (s *storage) SetDeleteFlag(IDs []string, userID string) error {
+	return nil
 }

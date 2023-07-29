@@ -34,12 +34,13 @@ func (m *MockURLGetter) EXPECT() *MockURLGetterMockRecorder {
 }
 
 // GetURL mocks base method.
-func (m *MockURLGetter) GetURL(shortURL, userID string) (string, error) {
+func (m *MockURLGetter) GetURL(shortURL, userID string) (bool, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetURL", shortURL, userID)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetURL indicates an expected call of GetURL.

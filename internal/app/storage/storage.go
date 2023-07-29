@@ -11,12 +11,13 @@ import (
 )
 
 type Storage interface {
-	SaveURL(longURL, shortURL, correlationID string, userID string) error
-	GetURL(shortURL, userID string) (string, error)
-	GetShortURL(longURL string) string
 	BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error
-	Ping() (*sql.DB, error)
+	SaveURL(longURL, shortURL, correlationID string, userID string) error
 	GetUserURLs(userID string) ([]models.UserURLs, error)
+	GetURL(shortURL, userID string) (bool, string, error)
+	GetShortURL(longURL string) string
+	Ping() (*sql.DB, error)
+	SetDeleteFlag(IDs []string, userID string) error
 }
 
 func NewRepo(cfg *config.Config) (Storage, error) {

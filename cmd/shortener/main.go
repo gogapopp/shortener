@@ -8,6 +8,7 @@ import (
 	"github.com/gogapopp/shortener/internal/app/config"
 	"github.com/gogapopp/shortener/internal/app/http-server/handlers/api/batchsave"
 	apisave "github.com/gogapopp/shortener/internal/app/http-server/handlers/api/save"
+	"github.com/gogapopp/shortener/internal/app/http-server/handlers/api/urlsdelete"
 	"github.com/gogapopp/shortener/internal/app/http-server/handlers/api/userurls"
 	"github.com/gogapopp/shortener/internal/app/http-server/handlers/ping"
 	"github.com/gogapopp/shortener/internal/app/http-server/handlers/redirect"
@@ -49,7 +50,7 @@ func main() {
 		r.Get("/ping", ping.GetPingDBHandler(log, storage, cfg))
 		r.Post("/api/shorten/batch", logger.RequestBatchJSONLogger(batchsave.PostBatchJSONhHandler(log, storage, cfg)))
 		r.Get("/api/user/urls", userurls.GetURLsHandler(log, storage, cfg))
-		// r.Delete("/api/user/urls", handlers.DeleteShortURLs)
+		r.Delete("/api/user/urls", urlsdelete.DeleteHandler(log, storage, cfg))
 	})
 
 	// запускаем сервер

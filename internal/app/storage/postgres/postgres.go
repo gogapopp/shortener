@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/gogapopp/shortener/internal/app/lib/globalstore"
 	"github.com/gogapopp/shortener/internal/app/lib/models"
@@ -32,7 +33,8 @@ func NewStorage(databaseDSN string) (*storage, error) {
         short_url TEXT,
         long_url TEXT,
         correlation_id TEXT,
-		user_id TEXT
+		user_id TEXT,
+		is_delete BOOLEAN
     );
     CREATE UNIQUE INDEX IF NOT EXISTS long_url_id ON urls(long_url);
 `)
@@ -62,15 +64,16 @@ func (s *storage) SaveURL(longURL, shortURL, correlationID string, userID string
 	return nil
 }
 
-func (s *storage) GetURL(shortURL, userID string) (string, error) {
+func (s *storage) GetURL(shortURL, userID string) (bool, string, error) {
 	const op = "storage.postgres.GetURL"
 	var longURL string
-	row := s.db.QueryRow("SELECT long_url FROM urls WHERE short_url = $1", shortURL)
-	err := row.Scan(&longURL)
+	var isDelete bool
+	row := s.db.QueryRow("SELECT long_url, is_delete FROM urls WHERE short_url = $1", shortURL)
+	err := row.Scan(&longURL, &isDelete)
 	if err != nil {
-		return "", fmt.Errorf("%s: %s", op, err)
+		return false, "", fmt.Errorf("%s: %s", op, err)
 	}
-	return longURL, nil
+	return isDelete, longURL, nil
 }
 
 func (s *storage) Ping() (*sql.DB, error) {
@@ -136,4 +139,17 @@ func (s *storage) GetUserURLs(userID string) ([]models.UserURLs, error) {
 	// получаем все сокращенные пользователем URL из базы данных
 	urls := globalstore.GlobalStore.GetURLsFromDatabase(userID)
 	return urls, nil
+}
+
+func (s *storage) SetDeleteFlag(IDs []string, userID string) error {
+	const op = "storage.postgres.SetDeleteFlag"
+	query := `
+		UPDATE urls
+		SET is_delete = true
+		WHERE short_url = ANY($1) AND user_id = $2
+	`
+	if _, err := s.db.Exec(query, "{"+strings.Join(IDs, ",")+"}", userID); err != nil {
+		return fmt.Errorf("%s: %s", op, err)
+	}
+	return nil
 }

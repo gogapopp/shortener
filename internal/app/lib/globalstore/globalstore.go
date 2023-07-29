@@ -6,6 +6,13 @@ import (
 	"github.com/gogapopp/shortener/internal/app/lib/models"
 )
 
+// был создан ради того чтоб пройти тест 14 инкремента...
+//
+//
+//
+//
+//
+
 type Store struct {
 	mu       sync.Mutex
 	database map[string][]models.UserURLs

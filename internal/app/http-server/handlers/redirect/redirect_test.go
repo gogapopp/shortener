@@ -51,7 +51,7 @@ func TestGetURLGetterHandler(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mockURLGetter.EXPECT().GetURL(tc.reqURL, gomock.Any()).Return(tc.expectedBody, tc.mockError)
+			mockURLGetter.EXPECT().GetURL(tc.reqURL, gomock.Any()).Return(true, tc.expectedBody, tc.mockError)
 
 			handler := GetURLGetterHandler(sugar, mockURLGetter, cfg)
 

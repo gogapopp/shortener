@@ -11,7 +11,7 @@ import (
 
 //go:generate mockgen -source=redirect.go -destination=mocks/mock.go
 type URLGetter interface {
-	GetURL(shortURL, userID string) (string, error)
+	GetURL(shortURL, userID string) (bool, string, error)
 }
 
 func GetURLGetterHandler(log *zap.SugaredLogger, urlGetter URLGetter, cfg *config.Config) http.HandlerFunc {
@@ -25,7 +25,11 @@ func GetURLGetterHandler(log *zap.SugaredLogger, urlGetter URLGetter, cfg *confi
 		}
 		url := fmt.Sprintf("http://%s%s", r.Host, r.URL.Path)
 		// получает ссылку из хранилища
-		longURL, err := urlGetter.GetURL(url, userID)
+		isDelete, longURL, err := urlGetter.GetURL(url, userID)
+		if isDelete {
+			http.Error(w, "url is deleted", http.StatusGone)
+			return
+		}
 		if err != nil {
 			log.Infof("%s: %s", op, err)
 			http.Error(w, "url not found", http.StatusBadRequest)
