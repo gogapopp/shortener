@@ -49,7 +49,8 @@ func NewStorage(databaseDSN string) (*storage, error) {
 
 func (s *storage) SaveURL(longURL, shortURL, correlationID string, userID string) error {
 	const op = "storage.postgres.SaveURL"
-	result, err := s.db.Exec("INSERT INTO urls (short_url, long_url, correlation_id, user_id) VALUES ($1, $2, $3, $4) ON CONFLICT (long_url) DO NOTHING", shortURL, longURL, correlationID, userID)
+	var isDelete = false
+	result, err := s.db.Exec("INSERT INTO urls (short_url, long_url, correlation_id, user_id, is_delete) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (long_url) DO NOTHING", shortURL, longURL, correlationID, userID, isDelete)
 	if err != nil {
 		return fmt.Errorf("%s: %s", op, err)
 	}
@@ -83,13 +84,14 @@ func (s *storage) Ping() (*sql.DB, error) {
 
 func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error {
 	const op = "storage.postgres.BatchInsertURL"
+	var isDelete = false
 	// собираем запрос
-	query := "INSERT INTO urls (short_url, long_url, correlation_id, user_id) VALUES "
+	query := "INSERT INTO urls (short_url, long_url, correlation_id, user_id, is_delete) VALUES "
 	values := []interface{}{}
 
 	for i, url := range urls {
-		query += fmt.Sprintf("($%d, $%d, $%d, $%d),", i*4+1, i*4+2, i*4+3, i*4+4)
-		values = append(values, url.ShortURL, url.OriginalURL, url.CorrelationID, userID)
+		query += fmt.Sprintf("($%d, $%d, $%d, $%d, $%d),", i*5+1, i*5+2, i*5+3, i*5+4, i*5+5)
+		values = append(values, url.ShortURL, url.OriginalURL, url.CorrelationID, userID, isDelete)
 		// ...
 		globalstore.GlobalStore.SaveURLToDatabase(userID, url.ShortURL, url.OriginalURL)
 	}
