@@ -27,8 +27,7 @@ func BenchmarkPostSaveHandler(b *testing.B) {
 	sugar := log.Sugar()
 
 	cfg := &config.Config{
-		BaseAddr:     "http://localhost:8080/",
-		DatabasePath: "host=localhost user=postgres database=postgres port=5432 password=123",
+		BaseAddr: "http://localhost:8080/",
 	}
 	storage, _ := storage.NewRepo(cfg)
 	// инициализация хендлера
@@ -56,8 +55,7 @@ func BenchmarkPostSaveJSONHandler(b *testing.B) {
 	sugar := log.Sugar()
 
 	cfg := &config.Config{
-		BaseAddr:     "http://localhost:8080/",
-		DatabasePath: "host=localhost user=postgres database=postgres port=5432 password=123",
+		BaseAddr: "http://localhost:8080/",
 	}
 	storage, _ := storage.NewRepo(cfg)
 	// инициализация хендлера
@@ -88,8 +86,7 @@ func BenchmarkGetURLGetterHandler(b *testing.B) {
 	sugar := log.Sugar()
 
 	cfg := &config.Config{
-		BaseAddr:     "http://localhost:8080/",
-		DatabasePath: "host=localhost user=postgres database=postgres port=5432 password=123",
+		BaseAddr: "http://localhost:8080/",
 	}
 	storage, _ := storage.NewRepo(cfg)
 	// инициализация хендлера
@@ -131,8 +128,7 @@ func BenchmarkGetPingDBHandler(b *testing.B) {
 	sugar := log.Sugar()
 
 	cfg := &config.Config{
-		BaseAddr:     "http://localhost:8080/",
-		DatabasePath: "host=localhost user=postgres database=postgres port=5432 password=123",
+		BaseAddr: "http://localhost:8080/",
 	}
 	storage, _ := storage.NewRepo(cfg)
 	// инициализация хендлера
@@ -156,8 +152,7 @@ func BenchmarkPostBatchJSONhHandler(b *testing.B) {
 	sugar := log.Sugar()
 
 	cfg := &config.Config{
-		BaseAddr:     "http://localhost:8080/",
-		DatabasePath: "host=localhost user=postgres database=postgres port=5432 password=123",
+		BaseAddr: "http://localhost:8080/",
 	}
 	storage, _ := storage.NewRepo(cfg)
 	// инициализация хендлера
@@ -200,8 +195,8 @@ func BenchmarkDeleteHandler(b *testing.B) {
 	sugar := log.Sugar()
 
 	cfg := &config.Config{
-		BaseAddr:     "http://localhost:8080/",
-		DatabasePath: "host=localhost user=postgres database=postgres port=5432 password=123",
+		BaseAddr: "http://localhost:8080/",
+		// DatabasePath: "",
 	}
 	storage, _ := storage.NewRepo(cfg)
 	// инициализация хендлера

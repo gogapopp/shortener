@@ -10,6 +10,8 @@ import (
 
 	"github.com/gogapopp/shortener/internal/app/config"
 	mock_save "github.com/gogapopp/shortener/internal/app/http-server/handlers/api/save/mocks"
+	"github.com/gogapopp/shortener/internal/app/lib/urlshortener"
+	"github.com/gogapopp/shortener/internal/app/storage"
 	"github.com/golang/mock/gomock"
 	"go.uber.org/zap"
 )
@@ -84,5 +86,36 @@ func TestPostSaveHandler(t *testing.T) {
 				t.Errorf("expected body %s, but got %s", tc.expectedBody, w.Body.String())
 			}
 		})
+	}
+}
+func BenchmarkPostSaveJSONHandler(b *testing.B) {
+	log, _ := zap.NewDevelopment()
+	defer log.Sync()
+	sugar := log.Sugar()
+
+	cfg := &config.Config{
+		BaseAddr: "http://localhost:8080/",
+		// DatabasePath: "host=localhost user=postgres database=postgres port=5432 password=123",
+	}
+	storage, _ := storage.NewRepo(cfg)
+	// инициализация хендлера
+	handler := PostSaveJSONHandler(sugar, storage, cfg)
+
+	// запуск бенчмарка
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		// создание тестового запроса
+		testURL := urlshortener.ShortenerURL(cfg.BaseAddr)
+		body := testURL
+		data := map[string]string{"url": body}
+		reqBody, _ := json.Marshal(data)
+		req, err := http.NewRequest("POST", "/api/shorten", bytes.NewBuffer(reqBody))
+		if err != nil {
+			b.Fatal(err)
+		}
+		b.StartTimer()
+
+		rr := httptest.NewRecorder()
+		handler.ServeHTTP(rr, req)
 	}
 }
