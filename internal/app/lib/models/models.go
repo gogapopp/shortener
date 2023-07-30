@@ -1,6 +1,7 @@
 // package models содержит в себе модели струтур данных
 package models
 
+// модели структур
 type (
 	// Request нужен для json прочтения body
 	Request struct {

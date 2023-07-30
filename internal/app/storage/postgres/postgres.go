@@ -12,10 +12,8 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
-var (
-	// ErrURLExists возращаемая если ссылка уже сохранена в хранилище
-	ErrURLExists = errors.New("url exists")
-)
+// ErrURLExists возращаемая если ссылка уже сохранена в хранилище
+var ErrURLExists = errors.New("url exists")
 
 // storage хранилище ссылок
 type storage struct {
@@ -117,7 +115,6 @@ func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse, userID str
 
 // GetShortURL получает короткую ссылку из хранилища
 func (s *storage) GetShortURL(longURL string) string {
-	const op = "storage.postgres.GetURL"
 	var shortURL string
 	row := s.db.QueryRow("SELECT short_url FROM urls WHERE long_url = $1", longURL)
 	row.Scan(&shortURL)
