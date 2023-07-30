@@ -34,16 +34,16 @@ func TestPostBatchJSONhHandler(t *testing.T) {
 				},
 			},
 		},
-		// {
-		// 	name:         "Test #2 invalid url",
-		// 	expectedCode: http.StatusBadRequest,
-		// 	reqBody: []models.BatchRequest{
-		// 		{
-		// 			CorrelationID: "3",
-		// 			OriginalURL:   "invalid url",
-		// 		},
-		// 	},
-		// },
+		{
+			name:         "Test #2 invalid url",
+			expectedCode: http.StatusBadRequest,
+			reqBody: []models.BatchRequest{
+				{
+					CorrelationID: "3",
+					OriginalURL:   "invalid url",
+				},
+			},
+		},
 	}
 
 	log, _ := zap.NewDevelopment()

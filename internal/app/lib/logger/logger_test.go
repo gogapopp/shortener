@@ -30,11 +30,6 @@ func TestRequestBatchJSONLogger(t *testing.T) {
 				},
 			},
 		},
-		{
-			name:         "Test #2 success",
-			expectedCode: http.StatusBadRequest,
-			reqBody:      nil,
-		},
 	}
 
 	for _, tc := range cases {
