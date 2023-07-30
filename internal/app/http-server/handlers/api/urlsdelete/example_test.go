@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// ExampleGetPingDBHandler пример работы с DeleteHandler
 func ExampleDeleteHandler() {
 	request := `[
 		"MWmHmO",

@@ -9,10 +9,14 @@ import (
 
 // Config хранит информацию о конфиге
 type Config struct {
-	RunAddr         string `env:"SERVER_ADDRESS"`
-	BaseAddr        string `env:"BASE_URL"`
+	// адрес для запуска сервера
+	RunAddr string `env:"SERVER_ADDRESS"`
+	// адрес хоста для запуска сервера
+	BaseAddr string `env:"BASE_URL"`
+	// название для файла записи
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
-	DatabasePath    string `env:"DATABASE_DSN"`
+	// данные для подключения к БД
+	DatabasePath string `env:"DATABASE_DSN"`
 }
 
 // ParseConfig парсит флаги и переменные окружения при запуске программы

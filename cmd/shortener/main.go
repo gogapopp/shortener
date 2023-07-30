@@ -21,6 +21,7 @@ import (
 	"github.com/gogapopp/shortener/internal/app/storage"
 )
 
+// main реализует вызов всех компонентов нужных для работы сервера и запускает сервер
 func main() {
 	// парсим конфиг
 	cfg := config.ParseConfig()
@@ -61,7 +62,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(cfg.RunAddr, r))
 }
 
-// pprofRoutes() возвращает хендлеры нужные для профилирования
+// pprofRoutes возвращает хендлеры нужные для профилирования
 func pprofRoutes() *chi.Mux {
 	r := chi.NewRouter()
 	r.Handle("/heap", pprof.Handler("heap"))

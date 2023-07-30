@@ -12,6 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// содержит в себе логгер
 var Log *zap.SugaredLogger
 
 // NewLogger создаём логгер

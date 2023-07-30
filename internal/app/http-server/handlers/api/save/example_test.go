@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// ExampleGetPingDBHandler пример работы с PostSaveJSONHandler
 func ExamplePostSaveJSONHandler() {
 	request := `{"url":"https://practicum.yandex.ru"}`
 	expect := struct {

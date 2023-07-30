@@ -7,7 +7,9 @@ import (
 
 // был создан ради того чтоб пройти тест 14 инкремента
 
+// Store содержит в себе хранилище для сохранённых юзером ссылок
 type Store struct {
+	// хранилище вида [userID]: {"longURL":longURL, "shortURL":"shortURL"}
 	database map[string][]models.UserURLs
 }
 

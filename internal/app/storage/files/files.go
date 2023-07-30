@@ -11,9 +11,13 @@ import (
 	"github.com/gogapopp/shortener/internal/app/lib/models"
 )
 
+// UUIDCounter хранить уникальное значение для записи в файл в виде json
 var UUIDCounter int
+
+// urlFileStorage содержит структуры для записи в файл
 var urlFileStorage []models.FileStorage
 
+// storage хранилище ссылок
 type storage struct {
 	urls            map[string]string
 	fileStoragePath string

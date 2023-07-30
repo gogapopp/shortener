@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// ExampleGetPingDBHandler пример работы с PostSaveHandler
 func ExamplePostSaveHandler() {
 	request := "https://practicum.yandex.ru"
 	resp, err := http.Post("localhost:8080", "text/plain", strings.NewReader(request))

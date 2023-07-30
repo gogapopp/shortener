@@ -1,3 +1,4 @@
+// package logger соддержит обработчик для логирования всех запросов на сервер
 package logger
 
 import (

@@ -13,7 +13,10 @@ import (
 	"go.uber.org/zap"
 )
 
+// secretKey секретный ключ
 var secretKey = []byte("secret-key")
+
+// nextUserID записывает в себя айди пользователя
 var nextUserID = 0
 
 // AuthMiddleware аутентифицирует пользователя с помощью cookie

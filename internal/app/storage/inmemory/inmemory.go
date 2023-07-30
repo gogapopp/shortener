@@ -8,6 +8,7 @@ import (
 	"github.com/gogapopp/shortener/internal/app/lib/models"
 )
 
+// storage хранилище ссылок
 type storage struct {
 	urls      map[string]string
 	urlsBatch map[string][]struct {

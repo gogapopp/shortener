@@ -2,39 +2,54 @@
 package models
 
 type (
+	// Request нужен для json прочтения body
 	Request struct {
+		// принимает longURL
 		URL string `json:"url"`
 	}
-
+	// Response нужен для json ответа
 	Response struct {
+		// принимает shortURL
 		ShortURL string `json:"result"`
 	}
-
+	// FileStorage нужен для записи в файл формата json
 	FileStorage struct {
-		UUID        int    `json:"uuid"`
-		ShortURL    string `json:"short_url"`
+		// уникальный айди запроса
+		UUID     int    `json:"uuid"`
+		ShortURL string `json:"short_url"`
+		// принимает longURL
 		OriginalURL string `json:"original_url"`
 	}
-
+	// BatchDatabaseResponse нужен для batch ответа сервера
 	BatchDatabaseResponse struct {
-		ShortURL      string
-		OriginalURL   string
+		// принимает shortURL
+		ShortURL string
+		// принимает longURL
+		OriginalURL string
+		// хранит уникальный айди
 		CorrelationID string
-		UserID        string
+		// айди пользователя
+		UserID string
 	}
-
+	// BatchRequest нужен для json прочтения body
 	BatchRequest struct {
+		// хранит уникальный айди
 		CorrelationID string `json:"correlation_id"`
-		OriginalURL   string `json:"original_url"`
-	}
-
-	BatchResponse struct {
-		CorrelationID string `json:"correlation_id"`
-		ShortURL      string `json:"short_url"`
-	}
-
-	UserURLs struct {
+		// принимает longURL
 		OriginalURL string `json:"original_url"`
-		ShortURL    string `json:"short_url"`
+	}
+	// BatchResponse нужен для json ответа
+	BatchResponse struct {
+		// хранит уникальный айди
+		CorrelationID string `json:"correlation_id"`
+		// принимает shortURL
+		ShortURL string `json:"short_url"`
+	}
+	// UserURLs
+	UserURLs struct {
+		// принимает longURL
+		OriginalURL string `json:"original_url"`
+		// принимает shortURL
+		ShortURL string `json:"short_url"`
 	}
 )

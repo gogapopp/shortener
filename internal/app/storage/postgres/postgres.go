@@ -13,9 +13,11 @@ import (
 )
 
 var (
+	// ErrURLExists возращаемая если ссылка уже сохранена в хранилище
 	ErrURLExists = errors.New("url exists")
 )
 
+// storage хранилище ссылок
 type storage struct {
 	db *sql.DB
 }

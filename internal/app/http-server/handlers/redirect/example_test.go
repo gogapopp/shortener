@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// ExampleGetPingDBHandler пример работы с GetURLGetterHandler
 func ExampleGetURLGetterHandler() {
 	c := http.Client{}
 	req, err := http.NewRequest(http.MethodDelete, "localhost:8080/{id}", nil)
