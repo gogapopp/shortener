@@ -1,37 +1,39 @@
 package models
 
-type Request struct {
-	URL string `json:"url"`
-}
+type (
+	Request struct {
+		URL string `json:"url"`
+	}
 
-type Response struct {
-	ShortURL string `json:"result"`
-}
+	Response struct {
+		ShortURL string `json:"result"`
+	}
 
-type FileStorage struct {
-	UUID        int    `json:"uuid"`
-	ShortURL    string `json:"short_url"`
-	OriginalURL string `json:"original_url"`
-}
+	FileStorage struct {
+		UUID        int    `json:"uuid"`
+		ShortURL    string `json:"short_url"`
+		OriginalURL string `json:"original_url"`
+	}
 
-type BatchDatabaseResponse struct {
-	ShortURL      string
-	OriginalURL   string
-	CorrelationID string
-	UserID        string
-}
+	BatchDatabaseResponse struct {
+		ShortURL      string
+		OriginalURL   string
+		CorrelationID string
+		UserID        string
+	}
 
-type BatchRequest struct {
-	CorrelationID string `json:"correlation_id"`
-	OriginalURL   string `json:"original_url"`
-}
+	BatchRequest struct {
+		CorrelationID string `json:"correlation_id"`
+		OriginalURL   string `json:"original_url"`
+	}
 
-type BatchResponse struct {
-	CorrelationID string `json:"correlation_id"`
-	ShortURL      string `json:"short_url"`
-}
+	BatchResponse struct {
+		CorrelationID string `json:"correlation_id"`
+		ShortURL      string `json:"short_url"`
+	}
 
-type UserURLs struct {
-	OriginalURL string `json:"original_url"`
-	ShortURL    string `json:"short_url"`
-}
+	UserURLs struct {
+		OriginalURL string `json:"original_url"`
+		ShortURL    string `json:"short_url"`
+	}
+)
