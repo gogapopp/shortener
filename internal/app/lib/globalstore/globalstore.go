@@ -1,12 +1,10 @@
 package globalstore
 
 import (
-	"sync"
-
 	"github.com/gogapopp/shortener/internal/app/lib/models"
 )
 
-// был создан ради того чтоб пройти тест 14 инкремента...
+// был создан ради того чтоб пройти тест 14 инкремента
 //
 //
 //
@@ -14,7 +12,6 @@ import (
 //
 
 type Store struct {
-	mu       sync.Mutex
 	database map[string][]models.UserURLs
 }
 

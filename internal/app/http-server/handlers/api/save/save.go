@@ -45,7 +45,7 @@ func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.
 			return
 		}
 		// делаем из обычной ссылки сжатую
-		shortURL := urlshortener.ShortenerURL(cfg.BaseAddr, req.URL)
+		shortURL := urlshortener.ShortenerURL(cfg.BaseAddr)
 		// сохраняем короткую ссылку
 		err = urlSaver.SaveURL(req.URL, shortURL, "", userID)
 		if err != nil {

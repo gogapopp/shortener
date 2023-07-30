@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
+//go:generate mockgen -source=ping.go -destination=mocks/mock.go
 type DBPinger interface {
 	Ping() (*sql.DB, error)
 }

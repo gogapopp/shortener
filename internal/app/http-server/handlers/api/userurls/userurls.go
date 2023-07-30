@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
+//go:generate mockgen -source=userurls.go -destination=mocks/mock.go
 type UserURLsGetter interface {
 	GetUserURLs(userID string) ([]models.UserURLs, error)
 }

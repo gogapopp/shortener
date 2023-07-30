@@ -8,7 +8,7 @@ import (
 )
 
 // ShortenerURL функция "сжимает" строку и возрващает короткую ссылку
-func ShortenerURL(baseAddr, bodyURL string) string {
+func ShortenerURL(baseAddr string) string {
 	const size = 6
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 

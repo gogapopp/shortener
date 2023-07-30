@@ -12,6 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
+//go:generate mockgen -source=urlsdelete.go -destination=mocks/mock.go
 type URLDeleter interface {
 	SetDeleteFlag(IDs []string, userID string) error
 }
@@ -44,19 +45,3 @@ func DeleteHandler(log *zap.SugaredLogger, urlDeleter URLDeleter, cfg *config.Co
 		w.WriteHeader(http.StatusAccepted)
 	}
 }
-
-// reqURL := fmt.Sprintf("http://%s", r.Host)
-// for k, id := range IDs {
-// 	if !strings.HasPrefix(id, "/") {
-// 		IDs[k] = fmt.Sprintf("%s/%s", reqURL, id)
-// 		continue
-// 	} else if !strings.HasPrefix(id, "http") {
-// 		IDs[k] = fmt.Sprintf("%s%s", reqURL, id)
-// 	}
-// }
-// err = urlDeleter.SetDeleteFlag(IDs, userID)
-// if err != nil {
-// 	log.Infof("%s: %s", op, err)
-// 	http.Error(w, "something went wrong", http.StatusInternalServerError)
-// 	return
-// }

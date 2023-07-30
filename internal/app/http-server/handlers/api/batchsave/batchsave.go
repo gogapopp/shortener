@@ -12,6 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
+//go:generate mockgen -source=batchsave.go -destination=mocks/mock.go
 type BatchSaver interface {
 	BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error
 }
@@ -43,7 +44,7 @@ func PostBatchJSONhHandler(log *zap.SugaredLogger, batchSaver BatchSaver, cfg *c
 				return
 			}
 			// "сжимаем" ссылку
-			BatchShortURL := urlshortener.ShortenerURL(cfg.BaseAddr, req[k].OriginalURL)
+			BatchShortURL := urlshortener.ShortenerURL(cfg.BaseAddr)
 
 			// собираем данные для отправки в бд
 			databaseResp = append(databaseResp, models.BatchDatabaseResponse{

@@ -2,7 +2,7 @@ package main
 
 import (
 	"net/http"
-	_ "net/http/pprof"
+	"net/http/pprof"
 
 	"github.com/go-chi/chi"
 	"github.com/gogapopp/shortener/internal/app/config"
@@ -52,8 +52,22 @@ func main() {
 		r.Get("/api/user/urls", userurls.GetURLsHandler(log, storage, cfg))
 		r.Delete("/api/user/urls", urlsdelete.DeleteHandler(log, storage, cfg))
 	})
+	r.Mount("/debug/pprof", pprofRoutes())
 
 	// запускаем сервер
 	log.Info("Running the server at: ", "addres: ", cfg.RunAddr)
 	log.Fatal(http.ListenAndServe(cfg.RunAddr, r))
+}
+
+func pprofRoutes() *chi.Mux {
+	r := chi.NewRouter()
+	r.Handle("/heap", pprof.Handler("heap"))
+	r.Handle("/goroutine", pprof.Handler("goroutine"))
+	r.Handle("/block", pprof.Handler("block"))
+	r.Handle("/threadcreate", pprof.Handler("threadcreate"))
+	r.HandleFunc("/cmdline", pprof.Cmdline)
+	r.HandleFunc("/profile", pprof.Profile)
+	r.HandleFunc("/symbol", pprof.Symbol)
+	r.HandleFunc("/trace", pprof.Trace)
+	return r
 }
