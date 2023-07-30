@@ -1,3 +1,4 @@
+// package urlsdelete содержит код хендлера DeleteHandler
 package urlsdelete
 
 import (
@@ -12,11 +13,12 @@ import (
 	"go.uber.org/zap"
 )
 
-//go:generate mockgen -source=urlsdelete.go -destination=mocks/mock.go
+// URLDeleter определяет метод SetDeleteFlag
 type URLDeleter interface {
 	SetDeleteFlag(IDs []string, userID string) error
 }
 
+// DeleteHandler хендлер который принимает массив идентефикаторов сокращенных строк для удаления
 func DeleteHandler(log *zap.SugaredLogger, urlDeleter URLDeleter, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.api.urlsdelete.PostSaveHandler"

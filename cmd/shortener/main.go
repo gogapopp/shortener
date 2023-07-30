@@ -1,3 +1,4 @@
+// package main реализует вызов всех компонентов нужных для работы сервера и запускает сервер
 package main
 
 import (
@@ -33,6 +34,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// проверяем установленно ли подключение к бд
 	db, err := storage.Ping()
 	if err == nil {
 		defer db.Close()
@@ -59,6 +61,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(cfg.RunAddr, r))
 }
 
+// pprofRoutes() возвращает хендлеры нужные для профилирования
 func pprofRoutes() *chi.Mux {
 	r := chi.NewRouter()
 	r.Handle("/heap", pprof.Handler("heap"))

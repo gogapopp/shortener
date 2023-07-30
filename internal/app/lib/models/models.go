@@ -1,3 +1,4 @@
+// package models содержит в себе модели струтур данных
 package models
 
 type (

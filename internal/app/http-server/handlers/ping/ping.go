@@ -1,3 +1,4 @@
+// package ping содержит код хендлера GetPingDBHandler
 package ping
 
 import (
@@ -8,11 +9,12 @@ import (
 	"go.uber.org/zap"
 )
 
-//go:generate mockgen -source=ping.go -destination=mocks/mock.go
+// DBPinger определяет метод Ping()
 type DBPinger interface {
 	Ping() (*sql.DB, error)
 }
 
+// GetPingDBHandler проверяет соединение с БД
 func GetPingDBHandler(log *zap.SugaredLogger, dbPinger DBPinger, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.ping.GetPingDBHandler"

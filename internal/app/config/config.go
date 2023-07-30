@@ -1,3 +1,4 @@
+// package config предназначен для парсинга флагов и env в структуру Config
 package config
 
 import (
@@ -6,6 +7,7 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
+// Config хранит информацию о конфиге
 type Config struct {
 	RunAddr         string `env:"SERVER_ADDRESS"`
 	BaseAddr        string `env:"BASE_URL"`

@@ -1,3 +1,4 @@
+// package globalstore содержит глобальное хранилище
 package globalstore
 
 import (
@@ -5,11 +6,6 @@ import (
 )
 
 // был создан ради того чтоб пройти тест 14 инкремента
-//
-//
-//
-//
-//
 
 type Store struct {
 	database map[string][]models.UserURLs

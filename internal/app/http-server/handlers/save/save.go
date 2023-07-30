@@ -1,3 +1,4 @@
+// package save содержит код хендлера PostSaveHandler
 package save
 
 import (
@@ -14,12 +15,13 @@ import (
 	"go.uber.org/zap"
 )
 
-//go:generate mockgen -source=save.go -destination=mocks/mock.go
+// URLSaver определяет методы SaveURL и GetShortURL
 type URLSaver interface {
 	SaveURL(longURL, shortURL, correlationID string, userID string) error
 	GetShortURL(longURL string) string
 }
 
+// PostSaveHandler принимает ссылку в виде строки и возвращает сокращённую
 func PostSaveHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.save.PostSaveHandler"

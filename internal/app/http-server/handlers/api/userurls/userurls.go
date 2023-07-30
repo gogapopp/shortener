@@ -1,3 +1,4 @@
+// package userurls содержит код хендлера GetURLsHandler
 package userurls
 
 import (
@@ -10,11 +11,12 @@ import (
 	"go.uber.org/zap"
 )
 
-//go:generate mockgen -source=userurls.go -destination=mocks/mock.go
+// UserURLsGetter определяет метод GetUserURLs
 type UserURLsGetter interface {
 	GetUserURLs(userID string) ([]models.UserURLs, error)
 }
 
+// GetURLsHandler возвращает все сокращённые ссылки юзера
 func GetURLsHandler(log *zap.SugaredLogger, userURLsGetter UserURLsGetter, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.api.userurls.GetURLsHandler"

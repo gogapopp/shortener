@@ -1,3 +1,4 @@
+// package storage содержит описание методов хранилища
 package storage
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/gogapopp/shortener/internal/app/storage/postgres"
 )
 
+// Storage определяет методы хранилища storage
 type Storage interface {
 	BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error
 	SaveURL(longURL, shortURL, correlationID string, userID string) error
@@ -20,6 +22,7 @@ type Storage interface {
 	SetDeleteFlag(IDs []string, userID string) error
 }
 
+// NewRepo согласно конфигу определяет тип хранилища
 func NewRepo(cfg *config.Config) (Storage, error) {
 	switch {
 	case cfg.DatabasePath != "":

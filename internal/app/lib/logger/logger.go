@@ -1,3 +1,4 @@
+// package logger создаёт экземляр логера
 package logger
 
 import (
@@ -26,6 +27,7 @@ func NewLogger() (*zap.SugaredLogger, error) {
 	return Sugar, nil
 }
 
+// RequestBatchJSONLogger логирует все batch json запросы
 func RequestBatchJSONLogger(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 

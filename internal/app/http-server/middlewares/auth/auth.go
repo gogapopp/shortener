@@ -1,3 +1,4 @@
+// package auth содержит в себе код аутентификации
 package auth
 
 import (
@@ -15,6 +16,7 @@ import (
 var secretKey = []byte("secret-key")
 var nextUserID = 0
 
+// AuthMiddleware аутентифицирует пользователя с помощью cookie
 func AuthMiddleware(log *zap.SugaredLogger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		log.Info("auth middleware enabled")
@@ -33,6 +35,7 @@ func AuthMiddleware(log *zap.SugaredLogger) func(next http.Handler) http.Handler
 	}
 }
 
+// GetUserIDFromCookie получает айди пользователя из cookie
 func GetUserIDFromCookie(r *http.Request) (string, error) {
 	const op = "middlewares.auth.GetUserIDFromCookie"
 
@@ -57,6 +60,7 @@ func GetUserIDFromCookie(r *http.Request) (string, error) {
 	return userID, nil
 }
 
+// SetUserIDCookie устанавливает cookie пользователю
 func SetUserIDCookie(w http.ResponseWriter, userID string) {
 	signature := GenerateSignature(userID)
 	value := fmt.Sprintf("%s|%s", userID, signature)
@@ -68,12 +72,14 @@ func SetUserIDCookie(w http.ResponseWriter, userID string) {
 	})
 }
 
+// GenerateSignature создаёт зашифрованную сигнатуру
 func GenerateSignature(userID string) string {
 	h := hmac.New(sha256.New, secretKey)
 	h.Write([]byte(userID))
 	return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
 
+// GenerateUniqueUserID() создаёт пользователю уникальный айди
 func GenerateUniqueUserID() string {
 	nextUserID++
 	return strconv.Itoa(nextUserID)

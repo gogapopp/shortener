@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// NewLogger логирует каждый запрос
 func NewLogger(log *zap.SugaredLogger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		log.Info("logger middleware enabled")

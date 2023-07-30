@@ -1,3 +1,4 @@
+// package batchsave содержит реализацию хендлера PostBatchJSONhHandler
 package batchsave
 
 import (
@@ -12,11 +13,12 @@ import (
 	"go.uber.org/zap"
 )
 
-//go:generate mockgen -source=batchsave.go -destination=mocks/mock.go
+// BatchSaver определяет метод batch сохранения URLs
 type BatchSaver interface {
 	BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error
 }
 
+// PostBatchJSONhHandler принимает на вход массив
 func PostBatchJSONhHandler(log *zap.SugaredLogger, batchSaver BatchSaver, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.api.save.PostBatchJSONhHandler"

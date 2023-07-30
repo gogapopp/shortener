@@ -1,3 +1,4 @@
+// package files реализация интерфейса Storage для записи в файл
 package files
 
 import (
@@ -18,6 +19,7 @@ type storage struct {
 	fileStoragePath string
 }
 
+// NewStorage создаёт хранилище storage
 func NewStorage(fileStoragePath string) (*storage, error) {
 	const op = "storage.files.NewStorage"
 	file, err := os.OpenFile(fileStoragePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -49,6 +51,7 @@ func NewStorage(fileStoragePath string) (*storage, error) {
 	}, nil
 }
 
+// SaveURL сохраняет ссылки в хранилище
 func (s *storage) SaveURL(longURL, shortURL, correlationID string, userID string) error {
 	const op = "storage.files.SaveURL"
 	s.urls[shortURL] = longURL
@@ -71,6 +74,7 @@ func (s *storage) SaveURL(longURL, shortURL, correlationID string, userID string
 	return os.WriteFile(s.fileStoragePath, data, 0666)
 }
 
+// GetURL получает ссылку из хранилища
 func (s *storage) GetURL(shortURL, userID string) (bool, string, error) {
 	for _, fileURL := range urlFileStorage {
 		s.urls[fileURL.ShortURL] = fileURL.OriginalURL
@@ -82,22 +86,27 @@ func (s *storage) GetURL(shortURL, userID string) (bool, string, error) {
 	return false, longURL, nil
 }
 
+// Ping() проверяет подключение к базе данных
 func (s *storage) Ping() (*sql.DB, error) {
 	return nil, fmt.Errorf("error ping DB")
 }
 
+// BatchInsertURL реализует batch запись скоращённых ссылок в хранилище
 func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error {
 	return nil
 }
 
+// GetShortURL получает короткую ссылку из хранилища
 func (s *storage) GetShortURL(longURL string) string {
 	return ""
 }
 
+// GetUserURLs возвращает ссылки которые сохранял определённый пользователь
 func (s *storage) GetUserURLs(userID string) ([]models.UserURLs, error) {
 	return nil, nil
 }
 
+// SetDeleteFlag реализует логику удаления ссылок из хранилища
 func (s *storage) SetDeleteFlag(IDs []string, userID string) error {
 	return nil
 }

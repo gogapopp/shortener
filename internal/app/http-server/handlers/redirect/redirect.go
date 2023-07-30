@@ -1,3 +1,4 @@
+// package redirect содержит хендлер GetURLGetterHandler
 package redirect
 
 import (
@@ -9,11 +10,12 @@ import (
 	"go.uber.org/zap"
 )
 
-//go:generate mockgen -source=redirect.go -destination=mocks/mock.go
+// URLGetter определяет метод GetURL
 type URLGetter interface {
 	GetURL(shortURL, userID string) (bool, string, error)
 }
 
+// GetURLGetterHandler редиректит пользователя по ссылке которая соответсвует сокращённой
 func GetURLGetterHandler(log *zap.SugaredLogger, urlGetter URLGetter, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.save.GetURLGetterHandler"

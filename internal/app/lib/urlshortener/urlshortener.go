@@ -1,3 +1,4 @@
+// package urlshortener содержит реализацию сокращения строки
 package urlshortener
 
 import (

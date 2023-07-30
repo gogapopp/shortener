@@ -1,3 +1,4 @@
+// package gzip содержит реализацию метода сжатия запроса
 package gzip
 
 import (

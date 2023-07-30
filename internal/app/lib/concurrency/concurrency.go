@@ -1,3 +1,4 @@
+// package concurrency содержит код реализации конкурентной обработки идентификаторов
 package concurrency
 
 import (
@@ -6,10 +7,12 @@ import (
 	"sync"
 )
 
+// URLDeleter определяет метод SetDeleteFlag
 type URLDeleter interface {
 	SetDeleteFlag(IDs []string, userID string) error
 }
 
+// ProcessIDs конкурентно обрабатывает идентификаторы сокращённых ссылок
 func ProcessIDs(IDs []string, reqURL string, urlDeleter URLDeleter, userID string) {
 	idsCh := make(chan string, len(IDs)+2)
 	urlsCh := make(chan string, len(IDs)+2)
