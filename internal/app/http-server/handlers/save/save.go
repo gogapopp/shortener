@@ -54,7 +54,7 @@ func PostSaveHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.Conf
 		if err != nil {
 			log.Infof("%s: %s", op, err)
 			if errors.Is(postgres.ErrURLExists, err) {
-				shortURL := urlSaver.GetShortURL(bodyURL)
+				shortURL = urlSaver.GetShortURL(bodyURL)
 				w.Header().Set("Content-Type", "text/plain")
 				w.WriteHeader(http.StatusConflict)
 				fmt.Fprint(w, shortURL)

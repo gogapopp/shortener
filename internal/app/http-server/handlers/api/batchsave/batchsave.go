@@ -31,7 +31,8 @@ func PostBatchJSONhHandler(log *zap.SugaredLogger, batchSaver BatchSaver, cfg *c
 		var req []models.BatchRequest
 		var resp []models.BatchResponse
 		var databaseResp []models.BatchDatabaseResponse
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		err = json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
 			log.Infof("%s: %s", op, err)
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
 			return
@@ -39,7 +40,7 @@ func PostBatchJSONhHandler(log *zap.SugaredLogger, batchSaver BatchSaver, cfg *c
 		// начинаем проходить по реквесту
 		for k := range req {
 			// проверяем является ли переданное значение ссылкой
-			_, err := url.ParseRequestURI(req[k].OriginalURL)
+			_, err = url.ParseRequestURI(req[k].OriginalURL)
 			if err != nil {
 				log.Infof("%s: %s", op, err)
 				http.Error(w, "invalid request", http.StatusBadRequest)

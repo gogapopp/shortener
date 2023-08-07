@@ -34,7 +34,8 @@ func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.
 		// декодируем данные из тела запроса
 		var resp models.Response
 		var req models.Request
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		err = json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
 			log.Infof("%s: %s", op, err)
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
 			return
@@ -53,7 +54,7 @@ func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.
 		if err != nil {
 			log.Infof("%s: %s", op, err)
 			if errors.Is(postgres.ErrURLExists, err) {
-				shortURL := urlSaver.GetShortURL(req.URL)
+				shortURL = urlSaver.GetShortURL(req.URL)
 				// передаём значение в ответ
 				resp.ShortURL = shortURL
 				// устанавливаем заголовок Content-Type и отправляем ответ
