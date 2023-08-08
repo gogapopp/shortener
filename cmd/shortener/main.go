@@ -2,6 +2,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/pprof"
 
@@ -21,8 +22,17 @@ import (
 	"github.com/gogapopp/shortener/internal/app/storage"
 )
 
+// go build flags
+var (
+	buildVersion string
+	buildDate    string
+	buildCommit  string
+)
+
 // main реализует вызов всех компонентов нужных для работы сервера и запускает сервер
 func main() {
+	// build stdout
+	buildStdout()
 	// парсим конфиг
 	cfg := config.ParseConfig()
 	// инициализируем логер
@@ -74,4 +84,20 @@ func pprofRoutes() *chi.Mux {
 	r.HandleFunc("/symbol", pprof.Symbol)
 	r.HandleFunc("/trace", pprof.Trace)
 	return r
+}
+
+func buildStdout() {
+	if buildVersion == "" {
+		buildVersion = "N/A"
+	}
+	if buildDate == "" {
+		buildDate = "N/A"
+	}
+	if buildCommit == "" {
+		buildCommit = "N/A"
+	}
+
+	fmt.Printf("Build version: %s\n", buildVersion)
+	fmt.Printf("Build date: %s\n", buildDate)
+	fmt.Printf("Build commit: %s\n", buildCommit)
 }

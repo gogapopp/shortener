@@ -1,4 +1,8 @@
 /*
+Usage:
+
+	staticlint [-flag] [package]
+
 Registered analyzers:
 
 	QF1001       Apply De Morgan's law
