@@ -7,7 +7,7 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
-// Config хранит информацию о конфиге
+// Config содержит параметры конфигурации для приложения
 type Config struct {
 	// адрес для запуска сервера
 	RunAddr string `env:"SERVER_ADDRESS"`

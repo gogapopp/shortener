@@ -20,17 +20,17 @@ func newCompressWriter(w http.ResponseWriter) *compressWriter {
 	}
 }
 
-// Header метод для записи в Header
+// Header метод структуры compressWriter, который записывает данные в Header
 func (c *compressWriter) Header() http.Header {
 	return c.w.Header()
 }
 
-// Write запись Write
+// Write метод структуры compressWriter, который записывает данные в тело http.ResponseWriter
 func (c *compressWriter) Write(p []byte) (int, error) {
 	return c.zw.Write(p)
 }
 
-// WriteHeader метод для записи StatusCode
+// WriteHeader метод структуры compressWriter, для записи StatusCode
 func (c *compressWriter) WriteHeader(statusCode int) {
 	if statusCode < 300 {
 		c.w.Header().Set("Content-Encoding", "gzip")
@@ -38,7 +38,7 @@ func (c *compressWriter) WriteHeader(statusCode int) {
 	c.w.WriteHeader(statusCode)
 }
 
-// Close закрывает Writer
+// Close метод структуры compressWriter, закрывает Writer
 func (c *compressWriter) Close() error {
 	return c.zw.Close()
 }
@@ -62,12 +62,12 @@ func newCompressReader(r io.ReadCloser) (*compressReader, error) {
 	}, nil
 }
 
-// Read вызывает метод Read()
+// Read метод структуры newCompressReader, который читает тело запроса
 func (c compressReader) Read(p []byte) (n int, err error) {
 	return c.zr.Read(p)
 }
 
-// Close вызывает метод Close()
+// Close метод структуры newCompressReader, закрывает структуру Close()
 func (c *compressReader) Close() error {
 	if err := c.r.Close(); err != nil {
 		return err

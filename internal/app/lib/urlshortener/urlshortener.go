@@ -2,25 +2,24 @@
 package urlshortener
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"log"
 	"strings"
-	"time"
 )
 
 // ShortenerURL функция "сжимает" строку и возрващает короткую ссылку
 func ShortenerURL(baseAddr string) string {
 	const size = 6
-	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	b := make([]byte, size)
+	_, err := rand.Read(b)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+	var letters = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
 		"abcdefghijklmnopqrstuvwxyz" +
 		"0123456789")
-
-	b := make([]rune, size)
-	for i := range b {
-		b[i] = chars[rnd.Intn(len(chars))]
-	}
 
 	address := baseAddr
 	// проверяем соответсвует ли строка формату http://example.ru/
@@ -31,5 +30,10 @@ func ShortenerURL(baseAddr string) string {
 		address = fmt.Sprintf("%s/", address)
 	}
 
-	return fmt.Sprintf("%s%s", address, string(b))
+	var result strings.Builder
+	result.Write([]byte(address))
+	for _, b := range b {
+		result.WriteRune(letters[int(b)%len(letters)])
+	}
+	return result.String()
 }

@@ -2,7 +2,9 @@ package main
 
 import (
 	"go/ast"
-	"go/types"
+	"go/parser"
+	"go/token"
+	"log"
 
 	"golang.org/x/tools/go/analysis"
 )
@@ -14,45 +16,22 @@ var osExitAnalyzer = &analysis.Analyzer{
 }
 
 func osExitRun(pass *analysis.Pass) (interface{}, error) {
-	for _, file := range pass.Files {
-		if pass.Pkg.Name() != "main" {
-			continue
-		}
-
-		ast.Inspect(file, func(n ast.Node) bool {
-			funcDecl, ok := n.(*ast.FuncDecl)
-			if !ok || funcDecl.Name.Name != "main" {
-				return true
-			}
-
-			ast.Inspect(funcDecl.Body, func(n ast.Node) bool {
-				callExpr, ok := n.(*ast.CallExpr)
-				if !ok {
-					return true
-				}
-
-				sel, ok := callExpr.Fun.(*ast.SelectorExpr)
-				if !ok {
-					return true
-				}
-
-				x, ok := sel.X.(*ast.Ident)
-				if !ok {
-					return true
-				}
-
-				obj, ok := pass.TypesInfo.Uses[x].(*types.PkgName)
-				if !ok || obj.Imported().Path() != "os" || sel.Sel.Name != "Exit" {
-					return true
-				}
-
-				pass.Reportf(callExpr.Pos(), "direct call to os.Exit in main function of main package")
-				return true
-			})
-
-			return true
-		})
+	fset := token.NewFileSet()
+	node, err := parser.ParseFile(fset, "../shortener/main.go", nil, parser.ParseComments)
+	if err != nil {
+		log.Fatal(err)
 	}
-	return nil, nil
 
+	ast.Inspect(node, func(n ast.Node) bool {
+		switch x := n.(type) {
+		case *ast.CallExpr:
+			if fun, ok := x.Fun.(*ast.SelectorExpr); ok {
+				if pkg, ok := fun.X.(*ast.Ident); ok && pkg.Name == "os" && fun.Sel.Name == "Exit" {
+					log.Fatal("os.Exit is not allowed in main function")
+				}
+			}
+		}
+		return true
+	})
+	return nil, nil
 }

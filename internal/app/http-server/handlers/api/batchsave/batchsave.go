@@ -18,7 +18,7 @@ type BatchSaver interface {
 	BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error
 }
 
-// PostBatchJSONhHandler принимает на вход массив
+// PostBatchJSONhHandler принимает на вход массив структур ссылок для сокращения и в ответ массив структур сокращённых ссылки в формате json
 func PostBatchJSONhHandler(log *zap.SugaredLogger, batchSaver BatchSaver, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.api.save.PostBatchJSONhHandler"

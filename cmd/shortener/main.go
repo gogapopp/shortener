@@ -86,6 +86,7 @@ func pprofRoutes() *chi.Mux {
 	return r
 }
 
+// buildStdout выводит в строку терминала build version, build date, build commit
 func buildStdout() {
 	if buildVersion == "" {
 		buildVersion = "N/A"
