@@ -12,6 +12,8 @@ import (
 )
 
 // Storage определяет методы хранилища storage
+//
+//go:generate mockgen -source=storage.go -destination=storagemocks/mock.go
 type Storage interface {
 	BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error
 	SaveURL(longURL, shortURL, correlationID string, userID string) error
