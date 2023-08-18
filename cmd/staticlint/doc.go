@@ -1,7 +1,8 @@
 /*
 Usage:
 
-	staticlint [-flag] [package]
+	$~ shortener/cmd/staticlint ./staticlint .
+	osexitcheck [-flag] [package]
 
 Registered analyzers:
 

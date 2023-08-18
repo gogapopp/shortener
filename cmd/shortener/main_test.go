@@ -43,8 +43,8 @@ func BenchmarkPostSaveHandler(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		b.StartTimer()
 		rr := httptest.NewRecorder()
+		b.StartTimer()
 		handler.ServeHTTP(rr, req)
 	}
 }
@@ -73,9 +73,8 @@ func BenchmarkPostSaveJSONHandler(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		b.StartTimer()
-
 		rr := httptest.NewRecorder()
+		b.StartTimer()
 		handler.ServeHTTP(rr, req)
 	}
 }
@@ -115,9 +114,9 @@ func BenchmarkGetURLGetterHandler(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		b.StartTimer()
 		// создание тестового запроса
 		rr := httptest.NewRecorder()
+		b.StartTimer()
 		handler.ServeHTTP(rr, req)
 	}
 }
@@ -139,9 +138,12 @@ func BenchmarkGetPingDBHandler(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
+
 	// запуск бенчмарка
 	for i := 0; i < b.N; i++ {
+		b.StopTimer()
 		rr := httptest.NewRecorder()
+		b.StartTimer()
 		handler.ServeHTTP(rr, req)
 	}
 }
@@ -182,9 +184,9 @@ func BenchmarkPostBatchJSONhHandler(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		b.StartTimer()
 		// создание тестового запроса
 		rr := httptest.NewRecorder()
+		b.StartTimer()
 		handler.ServeHTTP(rr, req)
 	}
 }
@@ -221,7 +223,9 @@ func BenchmarkDeleteHandler(b *testing.B) {
 	req.AddCookie(cookie)
 	// запуск бенчмарка
 	for i := 0; i < b.N; i++ {
+		b.StopTimer()
 		rr := httptest.NewRecorder()
+		b.StartTimer()
 		handler.ServeHTTP(rr, req)
 	}
 }

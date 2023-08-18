@@ -2,6 +2,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"net/http/pprof"
@@ -20,6 +21,7 @@ import (
 	mwLogger "github.com/gogapopp/shortener/internal/app/http-server/middlewares/logger"
 	"github.com/gogapopp/shortener/internal/app/lib/logger"
 	"github.com/gogapopp/shortener/internal/app/storage"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 // go build flags
@@ -67,9 +69,27 @@ func main() {
 	})
 	r.Mount("/debug/pprof", pprofRoutes())
 
-	// запускаем сервер
-	log.Info("Running the server at: ", "addres: ", cfg.RunAddr)
-	log.Fatal(http.ListenAndServe(cfg.RunAddr, r))
+	if cfg.HTTPSEnable {
+		manager := &autocert.Manager{
+			Prompt: autocert.AcceptTOS,
+			// создаём директорию для кэширования сертификатов
+			Cache: autocert.DirCache("certs"),
+			// адреса которые удовлетворяют сертификату
+			HostPolicy: autocert.HostWhitelist(cfg.RunAddr),
+		}
+		server := &http.Server{
+			Addr:      cfg.RunAddr,
+			Handler:   r,
+			TLSConfig: &tls.Config{GetCertificate: manager.GetCertificate},
+		}
+		// запуск сервер с TLS сертификатом
+		log.Info("Running the server at: ", cfg.RunAddr, " with TLS certificate")
+		log.Fatal(server.ListenAndServeTLS("", ""))
+	} else {
+		// запуск сервера без TLS сертификата
+		log.Info("Running the server at: ", cfg.RunAddr)
+		log.Fatal(http.ListenAndServe(cfg.RunAddr, r))
+	}
 }
 
 // pprofRoutes возвращает хендлеры нужные для профилирования

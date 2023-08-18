@@ -17,6 +17,8 @@ type Config struct {
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
 	// данные для подключения к БД
 	DatabasePath string `env:"DATABASE_DSN"`
+	// содержит переменную для включения TLS сертификата для сервера
+	HTTPSEnable bool `env:"ENABLE_HTTPS"`
 }
 
 // ParseConfig парсит флаги и переменные окружения при запуске программы
@@ -26,6 +28,7 @@ func ParseConfig() *Config {
 	flag.StringVar(&cfg.BaseAddr, "b", "http://localhost:8080/", "base url")
 	flag.StringVar(&cfg.FileStoragePath, "f", "", "file storage path")
 	flag.StringVar(&cfg.DatabasePath, "d", "", "database path")
+	flag.BoolVar(&cfg.HTTPSEnable, "s", false, "https enable")
 	flag.Parse()
 	cleanenv.ReadEnv(&cfg)
 	return &cfg
