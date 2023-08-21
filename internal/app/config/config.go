@@ -27,6 +27,7 @@ type Config struct {
 // ParseConfig парсит флаги и переменные окружения при запуске программы
 func ParseConfig() *Config {
 	var cfg Config
+	var fileConfig Config
 	// получаем путь к файлу config.json
 	configpath := os.Getenv("CONFIG")
 	if configpath == "" {
@@ -40,7 +41,9 @@ func ParseConfig() *Config {
 	flag.BoolVar(&cfg.HTTPSEnable, "s", false, "https enable")
 	flag.Parse()
 	// парсим config.json
-	fileConfig := ParseConfigFile(configpath)
+	if configpath != "" {
+		fileConfig = ParseConfigFile(configpath)
+	}
 	// записываем env в конфиг
 	cleanenv.ReadEnv(&cfg)
 	// записываем config.json
@@ -64,16 +67,16 @@ func ParseConfig() *Config {
 }
 
 // ParseConfigFile парсит конфиг из файла config.json
-func ParseConfigFile(configpath string) *Config {
-	var fileCfg Config
+func ParseConfigFile(configpath string) Config {
+	var fileConfig Config
 	// записываем конфиг из config.json
 	file, err := os.Open(configpath)
 	if err != nil {
 		log.Fatalf("error read config.json file: %s", err)
 	}
 	defer file.Close()
-	if err := json.NewDecoder(file).Decode(&fileCfg); err != nil {
+	if err = json.NewDecoder(file).Decode(&fileConfig); err != nil {
 		log.Fatalf("error decode config.json file: %s", err)
 	}
-	return &fileCfg
+	return fileConfig
 }
