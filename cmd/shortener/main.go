@@ -2,10 +2,14 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net/http"
 	"net/http/pprof"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/go-chi/chi"
 	"github.com/gogapopp/shortener/internal/app/config"
@@ -33,6 +37,7 @@ var (
 
 // main реализует вызов всех компонентов нужных для работы сервера и запускает сервер
 func main() {
+	ctx := context.Background()
 	// build stdout
 	buildStdout()
 	// парсим конфиг
@@ -69,6 +74,12 @@ func main() {
 	})
 	r.Mount("/debug/pprof", pprofRoutes())
 
+	// настраиваем http сервер
+	server := &http.Server{
+		Addr:    cfg.RunAddr,
+		Handler: r,
+	}
+
 	if cfg.HTTPSEnable {
 		manager := &autocert.Manager{
 			Prompt: autocert.AcceptTOS,
@@ -77,18 +88,33 @@ func main() {
 			// адреса которые удовлетворяют сертификату
 			HostPolicy: autocert.HostWhitelist(cfg.RunAddr),
 		}
-		server := &http.Server{
-			Addr:      cfg.RunAddr,
-			Handler:   r,
+		server = &http.Server{
 			TLSConfig: &tls.Config{GetCertificate: manager.GetCertificate},
 		}
 		// запуск сервер с TLS сертификатом
-		log.Info("Running the server at: ", cfg.RunAddr, " with TLS certificate")
-		log.Fatal(server.ListenAndServeTLS("", ""))
+		go func() {
+			log.Info("Running the server at: ", cfg.RunAddr, " with TLS certificate")
+			if err := server.ListenAndServeTLS("", ""); err != nil {
+				log.Fatal("error to start the server:", err)
+			}
+		}()
 	} else {
 		// запуск сервера без TLS сертификата
-		log.Info("Running the server at: ", cfg.RunAddr)
-		log.Fatal(http.ListenAndServe(cfg.RunAddr, r))
+		go func() {
+			log.Info("Running the server at: ", cfg.RunAddr)
+			if err := server.ListenAndServe(); err != nil {
+				log.Fatal("error to start the server:", err)
+			}
+		}()
+	}
+
+	// реализация graceful shutdown
+	sigint := make(chan os.Signal, 1)
+	signal.Notify(sigint, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+	<-sigint
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatal("error shutdown the server", err)
 	}
 }
 
