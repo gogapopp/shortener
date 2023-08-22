@@ -52,11 +52,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// проверяем установленно ли подключение к бд
-	db, err := storage.Ping()
-	if err == nil {
-		defer db.Close()
-	}
 
 	// подключаем роуты и мидлвееры
 	r := chi.NewRouter()
@@ -94,7 +89,7 @@ func main() {
 		// запуск сервер с TLS сертификатом
 		go func() {
 			log.Info("Running the server at: ", cfg.RunAddr, " with TLS certificate")
-			if err := server.ListenAndServeTLS("", ""); err != nil {
+			if err := server.ListenAndServeTLS("", ""); err != http.ErrServerClosed {
 				log.Fatal("error to start the server:", err)
 			}
 		}()
@@ -102,7 +97,7 @@ func main() {
 		// запуск сервера без TLS сертификата
 		go func() {
 			log.Info("Running the server at: ", cfg.RunAddr)
-			if err := server.ListenAndServe(); err != nil {
+			if err := server.ListenAndServe(); err != http.ErrServerClosed {
 				log.Fatal("error to start the server:", err)
 			}
 		}()
@@ -113,8 +108,16 @@ func main() {
 	signal.Notify(sigint, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 	<-sigint
 
+	// проверяем установленно ли подключение к бд
+	db, err := storage.Ping()
+	if err == nil {
+		if err := db.Close(); err != nil {
+			log.Info("error close db conn:", err)
+		}
+	}
+
 	if err := server.Shutdown(ctx); err != nil {
-		log.Fatal("error shutdown the server", err)
+		log.Info("error shutdown the server:", err)
 	}
 }
 
