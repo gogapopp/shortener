@@ -22,6 +22,8 @@ type Config struct {
 	DatabasePath string `env:"DATABASE_DSN" json:"database_dsn"`
 	// содержит переменную для включения TLS сертификата для сервера
 	HTTPSEnable bool `env:"ENABLE_HTTPS" json:"enable_https"`
+	// разрешённые адреса для /api/internal/stats
+	TrustedSubnet string `env:"TRUSTED_SUBNET" json:"trusted_subnet"`
 }
 
 // ParseConfig парсит флаги и переменные окружения при запуске программы
@@ -58,6 +60,9 @@ func ParseConfig() *Config {
 	}
 	if cfg.RunAddr == "" {
 		cfg.RunAddr = fileConfig.RunAddr
+	}
+	if cfg.TrustedSubnet == "" {
+		cfg.TrustedSubnet = fileConfig.TrustedSubnet
 	}
 	// если cfg.HTTPSEnable false
 	if !cfg.HTTPSEnable {

@@ -17,11 +17,11 @@ import (
 type Storage interface {
 	BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error
 	SaveURL(longURL, shortURL, correlationID string, userID string) error
-	GetUserURLs(userID string) ([]models.UserURLs, error)
 	GetURL(shortURL, userID string) (bool, string, error)
+	GetUserURLs(userID string) ([]models.UserURLs, error)
+	SetDeleteFlag(IDs []string, userID string) error
 	GetShortURL(longURL string) string
 	Ping() (*sql.DB, error)
-	SetDeleteFlag(IDs []string, userID string) error
 }
 
 // NewRepo согласно конфигу определяет тип хранилища
