@@ -8,8 +8,8 @@ import (
 	"net/http"
 
 	"github.com/gogapopp/shortener/internal/app/config"
-	"github.com/gogapopp/shortener/internal/app/http-server/middlewares/auth"
 	"github.com/gogapopp/shortener/internal/app/lib/concurrency"
+	"github.com/gogapopp/shortener/internal/app/network-server/middlewares/auth"
 	"go.uber.org/zap"
 )
 

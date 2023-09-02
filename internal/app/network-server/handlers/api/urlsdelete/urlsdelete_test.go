@@ -7,8 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	mock_urlsdelete "github.com/gogapopp/shortener/internal/app/http-server/handlers/api/urlsdelete/mocks"
+	mock_urlsdelete "github.com/gogapopp/shortener/internal/app/network-server/handlers/api/urlsdelete/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
@@ -46,12 +47,12 @@ func TestDeleteHandler(t *testing.T) {
 
 			reqBody, err := json.Marshal(tc.reqBody)
 			if err != nil {
-				t.Fatal(err)
+				assert.NoError(t, err)
 			}
 
 			req, err := http.NewRequest("DELETE", "/api/user/urls", bytes.NewBuffer(reqBody))
 			if err != nil {
-				t.Fatal(err)
+				assert.NoError(t, err)
 			}
 			req.Header.Set("Content-Type", "application/json")
 			cookie := &http.Cookie{

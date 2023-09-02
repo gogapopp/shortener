@@ -21,6 +21,7 @@ type Storage interface {
 	GetUserURLs(userID string) ([]models.UserURLs, error)
 	SetDeleteFlag(IDs []string, userID string) error
 	GetShortURL(longURL string) string
+	GetStats() (int, int, error)
 	Ping() (*sql.DB, error)
 }
 

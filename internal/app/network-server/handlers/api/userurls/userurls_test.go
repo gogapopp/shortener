@@ -6,9 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	mock_userurls "github.com/gogapopp/shortener/internal/app/http-server/handlers/api/userurls/mocks"
 	"github.com/gogapopp/shortener/internal/app/lib/models"
+	mock_userurls "github.com/gogapopp/shortener/internal/app/network-server/handlers/api/userurls/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
@@ -59,7 +60,7 @@ func TestGetURLsHandler(t *testing.T) {
 
 			req, err := http.NewRequest("GET", "/api/user/urls", nil)
 			if err != nil {
-				t.Fatal(err)
+				assert.NoError(t, err)
 			}
 			req.Header.Set("Content-Type", "application/json")
 			cookie := &http.Cookie{

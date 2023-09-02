@@ -8,9 +8,10 @@ import (
 	"testing"
 
 	"github.com/gogapopp/shortener/internal/app/config"
-	mock_batchsave "github.com/gogapopp/shortener/internal/app/http-server/handlers/api/batchsave/mocks"
 	"github.com/gogapopp/shortener/internal/app/lib/models"
+	mock_batchsave "github.com/gogapopp/shortener/internal/app/network-server/handlers/api/batchsave/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
@@ -66,12 +67,12 @@ func TestPostBatchJSONhHandler(t *testing.T) {
 
 			reqBody, err := json.Marshal(tc.reqBody)
 			if err != nil {
-				t.Fatal(err)
+				assert.NoError(t, err)
 			}
 
 			req, err := http.NewRequest("POST", "/api/shorten/batch", bytes.NewBuffer(reqBody))
 			if err != nil {
-				t.Fatal(err)
+				assert.NoError(t, err)
 			}
 			req.Header.Set("Content-Type", "application/json")
 			cookie := &http.Cookie{

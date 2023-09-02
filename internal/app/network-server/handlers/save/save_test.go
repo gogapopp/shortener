@@ -8,8 +8,9 @@ import (
 	"testing"
 
 	"github.com/gogapopp/shortener/internal/app/config"
-	mock_save "github.com/gogapopp/shortener/internal/app/http-server/handlers/save/mocks"
+	mock_save "github.com/gogapopp/shortener/internal/app/network-server/handlers/save/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
@@ -54,7 +55,7 @@ func TestPostSaveHandler(t *testing.T) {
 
 			req, err := http.NewRequest("POST", "/", bytes.NewBufferString(tc.reqBody))
 			if err != nil {
-				t.Fatal(err)
+				assert.NoError(t, err)
 			}
 			cookie := &http.Cookie{
 				Name:  "user_id",

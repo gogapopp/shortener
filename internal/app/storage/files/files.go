@@ -114,3 +114,8 @@ func (s *storage) GetUserURLs(userID string) ([]models.UserURLs, error) {
 func (s *storage) SetDeleteFlag(IDs []string, userID string) error {
 	return nil
 }
+
+// GetStats получаем кол-во юзеров и коротких ссылок в бд
+func (s *storage) GetStats() (int, int, error) {
+	return 0, 0, fmt.Errorf("error")
+}

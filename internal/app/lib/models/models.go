@@ -53,4 +53,11 @@ type (
 		// принимает shortURL
 		ShortURL string `json:"short_url"`
 	}
+	// Stats
+	Stasts struct {
+		// количество сокращённых URL в сервисе
+		URLs int `json:"urls"`
+		// количество пользователей в сервисе
+		UserIDs int `json:"users"`
+	}
 )

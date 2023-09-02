@@ -9,10 +9,11 @@ import (
 	"testing"
 
 	"github.com/gogapopp/shortener/internal/app/config"
-	mock_save "github.com/gogapopp/shortener/internal/app/http-server/handlers/api/save/mocks"
 	"github.com/gogapopp/shortener/internal/app/lib/urlshortener"
+	mock_save "github.com/gogapopp/shortener/internal/app/network-server/handlers/api/save/mocks"
 	"github.com/gogapopp/shortener/internal/app/storage"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
@@ -59,12 +60,12 @@ func TestPostSaveHandler(t *testing.T) {
 
 			reqBody, err := json.Marshal(tc.reqBody)
 			if err != nil {
-				t.Fatal(err)
+				assert.NoError(t, err)
 			}
 
 			req, err := http.NewRequest("POST", "/", bytes.NewBuffer(reqBody))
 			if err != nil {
-				t.Fatal(err)
+				assert.NoError(t, err)
 			}
 			req.Header.Set("Content-Type", "application/json")
 			cookie := &http.Cookie{
@@ -111,7 +112,7 @@ func BenchmarkPostSaveJSONHandler(b *testing.B) {
 		reqBody, _ := json.Marshal(data)
 		req, err := http.NewRequest("POST", "/api/shorten", bytes.NewBuffer(reqBody))
 		if err != nil {
-			b.Fatal(err)
+			assert.NoError(b, err)
 		}
 		b.StartTimer()
 

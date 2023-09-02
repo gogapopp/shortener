@@ -41,6 +41,7 @@ func ParseConfig() *Config {
 	flag.StringVar(&cfg.FileStoragePath, "f", "", "file storage path")
 	flag.StringVar(&cfg.DatabasePath, "d", "", "database path")
 	flag.BoolVar(&cfg.HTTPSEnable, "s", false, "https enable")
+	flag.StringVar(&cfg.TrustedSubnet, "t", "", "subnet")
 	flag.Parse()
 	// парсим config.json
 	if configpath != "" {

@@ -163,3 +163,15 @@ func (s *storage) SetDeleteFlag(IDs []string, userID string) error {
 	}
 	return nil
 }
+
+// GetStats получаем кол-во юзеров и коротких ссылок в бд
+func (s *storage) GetStats() (int, int, error) {
+	const op = "storage.postgres.GetStats"
+	statsQuery := "SELECT COUNT(short_url) AS short_url_count, COUNT(DISTINCT user_id) AS user_id_count FROM urls"
+	var shortURLcount, userIDcount int
+	err := s.db.QueryRow(statsQuery).Scan(&shortURLcount, &userIDcount)
+	if err != nil {
+		return 0, 0, fmt.Errorf("%s: %s", op, err)
+	}
+	return shortURLcount, userIDcount, nil
+}
