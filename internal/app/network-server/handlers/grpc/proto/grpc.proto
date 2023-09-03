@@ -86,11 +86,11 @@ message Empty {}
 
 
 service MultiService {
-    rpc SaveUrl (UrlSaveRequest) returns (UrlSaveResponse);
-    rpc GetUrl (UrlGetRequest) returns (UrlGetResponse);
+    rpc SaveURL (UrlSaveRequest) returns (UrlSaveResponse);
+    rpc GetURL (UrlGetRequest) returns (UrlGetResponse);
     rpc Ping (Empty) returns (PingResponse);
-    rpc GetUrls (UrlsGetRequest) returns (UrlsGetResponse);
-    rpc DeleteUrls (UrlsToDeleteRequest) returns (UrlsToDeleteResponse);
+    rpc GetURLs (UrlsGetRequest) returns (UrlsGetResponse);
+    rpc DeleteURLs (UrlsToDeleteRequest) returns (UrlsToDeleteResponse);
     rpc BatchSave (BatchUrlsRequest) returns (BatchUrlsResponse);
     rpc Stats (Empty) returns (StatsResponse);
 }

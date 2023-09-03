@@ -19,11 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	MultiService_SaveUrl_FullMethodName    = "/grpc.MultiService/SaveUrl"
-	MultiService_GetUrl_FullMethodName     = "/grpc.MultiService/GetUrl"
+	MultiService_SaveURL_FullMethodName    = "/grpc.MultiService/SaveURL"
+	MultiService_GetURL_FullMethodName     = "/grpc.MultiService/GetURL"
 	MultiService_Ping_FullMethodName       = "/grpc.MultiService/Ping"
-	MultiService_GetUrls_FullMethodName    = "/grpc.MultiService/GetUrls"
-	MultiService_DeleteUrls_FullMethodName = "/grpc.MultiService/DeleteUrls"
+	MultiService_GetURLs_FullMethodName    = "/grpc.MultiService/GetURLs"
+	MultiService_DeleteURLs_FullMethodName = "/grpc.MultiService/DeleteURLs"
 	MultiService_BatchSave_FullMethodName  = "/grpc.MultiService/BatchSave"
 	MultiService_Stats_FullMethodName      = "/grpc.MultiService/Stats"
 )
@@ -32,11 +32,11 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MultiServiceClient interface {
-	SaveUrl(ctx context.Context, in *UrlSaveRequest, opts ...grpc.CallOption) (*UrlSaveResponse, error)
-	GetUrl(ctx context.Context, in *UrlGetRequest, opts ...grpc.CallOption) (*UrlGetResponse, error)
+	SaveURL(ctx context.Context, in *UrlSaveRequest, opts ...grpc.CallOption) (*UrlSaveResponse, error)
+	GetURL(ctx context.Context, in *UrlGetRequest, opts ...grpc.CallOption) (*UrlGetResponse, error)
 	Ping(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*PingResponse, error)
-	GetUrls(ctx context.Context, in *UrlsGetRequest, opts ...grpc.CallOption) (*UrlsGetResponse, error)
-	DeleteUrls(ctx context.Context, in *UrlsToDeleteRequest, opts ...grpc.CallOption) (*UrlsToDeleteResponse, error)
+	GetURLs(ctx context.Context, in *UrlsGetRequest, opts ...grpc.CallOption) (*UrlsGetResponse, error)
+	DeleteURLs(ctx context.Context, in *UrlsToDeleteRequest, opts ...grpc.CallOption) (*UrlsToDeleteResponse, error)
 	BatchSave(ctx context.Context, in *BatchUrlsRequest, opts ...grpc.CallOption) (*BatchUrlsResponse, error)
 	Stats(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*StatsResponse, error)
 }
@@ -49,18 +49,18 @@ func NewMultiServiceClient(cc grpc.ClientConnInterface) MultiServiceClient {
 	return &multiServiceClient{cc}
 }
 
-func (c *multiServiceClient) SaveUrl(ctx context.Context, in *UrlSaveRequest, opts ...grpc.CallOption) (*UrlSaveResponse, error) {
+func (c *multiServiceClient) SaveURL(ctx context.Context, in *UrlSaveRequest, opts ...grpc.CallOption) (*UrlSaveResponse, error) {
 	out := new(UrlSaveResponse)
-	err := c.cc.Invoke(ctx, MultiService_SaveUrl_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, MultiService_SaveURL_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *multiServiceClient) GetUrl(ctx context.Context, in *UrlGetRequest, opts ...grpc.CallOption) (*UrlGetResponse, error) {
+func (c *multiServiceClient) GetURL(ctx context.Context, in *UrlGetRequest, opts ...grpc.CallOption) (*UrlGetResponse, error) {
 	out := new(UrlGetResponse)
-	err := c.cc.Invoke(ctx, MultiService_GetUrl_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, MultiService_GetURL_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -76,18 +76,18 @@ func (c *multiServiceClient) Ping(ctx context.Context, in *Empty, opts ...grpc.C
 	return out, nil
 }
 
-func (c *multiServiceClient) GetUrls(ctx context.Context, in *UrlsGetRequest, opts ...grpc.CallOption) (*UrlsGetResponse, error) {
+func (c *multiServiceClient) GetURLs(ctx context.Context, in *UrlsGetRequest, opts ...grpc.CallOption) (*UrlsGetResponse, error) {
 	out := new(UrlsGetResponse)
-	err := c.cc.Invoke(ctx, MultiService_GetUrls_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, MultiService_GetURLs_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *multiServiceClient) DeleteUrls(ctx context.Context, in *UrlsToDeleteRequest, opts ...grpc.CallOption) (*UrlsToDeleteResponse, error) {
+func (c *multiServiceClient) DeleteURLs(ctx context.Context, in *UrlsToDeleteRequest, opts ...grpc.CallOption) (*UrlsToDeleteResponse, error) {
 	out := new(UrlsToDeleteResponse)
-	err := c.cc.Invoke(ctx, MultiService_DeleteUrls_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, MultiService_DeleteURLs_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -116,11 +116,11 @@ func (c *multiServiceClient) Stats(ctx context.Context, in *Empty, opts ...grpc.
 // All implementations must embed UnimplementedMultiServiceServer
 // for forward compatibility
 type MultiServiceServer interface {
-	SaveUrl(context.Context, *UrlSaveRequest) (*UrlSaveResponse, error)
-	GetUrl(context.Context, *UrlGetRequest) (*UrlGetResponse, error)
+	SaveURL(context.Context, *UrlSaveRequest) (*UrlSaveResponse, error)
+	GetURL(context.Context, *UrlGetRequest) (*UrlGetResponse, error)
 	Ping(context.Context, *Empty) (*PingResponse, error)
-	GetUrls(context.Context, *UrlsGetRequest) (*UrlsGetResponse, error)
-	DeleteUrls(context.Context, *UrlsToDeleteRequest) (*UrlsToDeleteResponse, error)
+	GetURLs(context.Context, *UrlsGetRequest) (*UrlsGetResponse, error)
+	DeleteURLs(context.Context, *UrlsToDeleteRequest) (*UrlsToDeleteResponse, error)
 	BatchSave(context.Context, *BatchUrlsRequest) (*BatchUrlsResponse, error)
 	Stats(context.Context, *Empty) (*StatsResponse, error)
 	mustEmbedUnimplementedMultiServiceServer()
@@ -130,20 +130,20 @@ type MultiServiceServer interface {
 type UnimplementedMultiServiceServer struct {
 }
 
-func (UnimplementedMultiServiceServer) SaveUrl(context.Context, *UrlSaveRequest) (*UrlSaveResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SaveUrl not implemented")
+func (UnimplementedMultiServiceServer) SaveURL(context.Context, *UrlSaveRequest) (*UrlSaveResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveURL not implemented")
 }
-func (UnimplementedMultiServiceServer) GetUrl(context.Context, *UrlGetRequest) (*UrlGetResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUrl not implemented")
+func (UnimplementedMultiServiceServer) GetURL(context.Context, *UrlGetRequest) (*UrlGetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetURL not implemented")
 }
 func (UnimplementedMultiServiceServer) Ping(context.Context, *Empty) (*PingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
 }
-func (UnimplementedMultiServiceServer) GetUrls(context.Context, *UrlsGetRequest) (*UrlsGetResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUrls not implemented")
+func (UnimplementedMultiServiceServer) GetURLs(context.Context, *UrlsGetRequest) (*UrlsGetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetURLs not implemented")
 }
-func (UnimplementedMultiServiceServer) DeleteUrls(context.Context, *UrlsToDeleteRequest) (*UrlsToDeleteResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteUrls not implemented")
+func (UnimplementedMultiServiceServer) DeleteURLs(context.Context, *UrlsToDeleteRequest) (*UrlsToDeleteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteURLs not implemented")
 }
 func (UnimplementedMultiServiceServer) BatchSave(context.Context, *BatchUrlsRequest) (*BatchUrlsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchSave not implemented")
@@ -164,38 +164,38 @@ func RegisterMultiServiceServer(s grpc.ServiceRegistrar, srv MultiServiceServer)
 	s.RegisterService(&MultiService_ServiceDesc, srv)
 }
 
-func _MultiService_SaveUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _MultiService_SaveURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UrlSaveRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MultiServiceServer).SaveUrl(ctx, in)
+		return srv.(MultiServiceServer).SaveURL(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MultiService_SaveUrl_FullMethodName,
+		FullMethod: MultiService_SaveURL_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultiServiceServer).SaveUrl(ctx, req.(*UrlSaveRequest))
+		return srv.(MultiServiceServer).SaveURL(ctx, req.(*UrlSaveRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MultiService_GetUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _MultiService_GetURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UrlGetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MultiServiceServer).GetUrl(ctx, in)
+		return srv.(MultiServiceServer).GetURL(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MultiService_GetUrl_FullMethodName,
+		FullMethod: MultiService_GetURL_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultiServiceServer).GetUrl(ctx, req.(*UrlGetRequest))
+		return srv.(MultiServiceServer).GetURL(ctx, req.(*UrlGetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -218,38 +218,38 @@ func _MultiService_Ping_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MultiService_GetUrls_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _MultiService_GetURLs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UrlsGetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MultiServiceServer).GetUrls(ctx, in)
+		return srv.(MultiServiceServer).GetURLs(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MultiService_GetUrls_FullMethodName,
+		FullMethod: MultiService_GetURLs_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultiServiceServer).GetUrls(ctx, req.(*UrlsGetRequest))
+		return srv.(MultiServiceServer).GetURLs(ctx, req.(*UrlsGetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MultiService_DeleteUrls_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _MultiService_DeleteURLs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UrlsToDeleteRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MultiServiceServer).DeleteUrls(ctx, in)
+		return srv.(MultiServiceServer).DeleteURLs(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MultiService_DeleteUrls_FullMethodName,
+		FullMethod: MultiService_DeleteURLs_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MultiServiceServer).DeleteUrls(ctx, req.(*UrlsToDeleteRequest))
+		return srv.(MultiServiceServer).DeleteURLs(ctx, req.(*UrlsToDeleteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -298,24 +298,24 @@ var MultiService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*MultiServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SaveUrl",
-			Handler:    _MultiService_SaveUrl_Handler,
+			MethodName: "SaveURL",
+			Handler:    _MultiService_SaveURL_Handler,
 		},
 		{
-			MethodName: "GetUrl",
-			Handler:    _MultiService_GetUrl_Handler,
+			MethodName: "GetURL",
+			Handler:    _MultiService_GetURL_Handler,
 		},
 		{
 			MethodName: "Ping",
 			Handler:    _MultiService_Ping_Handler,
 		},
 		{
-			MethodName: "GetUrls",
-			Handler:    _MultiService_GetUrls_Handler,
+			MethodName: "GetURLs",
+			Handler:    _MultiService_GetURLs_Handler,
 		},
 		{
-			MethodName: "DeleteUrls",
-			Handler:    _MultiService_DeleteUrls_Handler,
+			MethodName: "DeleteURLs",
+			Handler:    _MultiService_DeleteURLs_Handler,
 		},
 		{
 			MethodName: "BatchSave",

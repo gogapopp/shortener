@@ -34,7 +34,7 @@ func NewGrpcServer(cfg *config.Config, storage storage.Storage) *grpc.Server {
 }
 
 // SaveUrl сохраняем ссылку
-func (s *shortenerServer) SaveUrl(ctx context.Context, in *pb.UrlSaveRequest) (*pb.UrlSaveResponse, error) {
+func (s *shortenerServer) SaveURL(ctx context.Context, in *pb.UrlSaveRequest) (*pb.UrlSaveResponse, error) {
 	var response pb.UrlSaveResponse
 	// проверяем является ли ссылка переданная в body валидной
 	if _, err := url.ParseRequestURI(in.LongURL); err != nil {
@@ -57,7 +57,7 @@ func (s *shortenerServer) SaveUrl(ctx context.Context, in *pb.UrlSaveRequest) (*
 }
 
 // GetUrl получаем ссылку которая соответсвует сокращённой
-func (s *shortenerServer) GetUrl(ctx context.Context, in *pb.UrlGetRequest) (*pb.UrlGetResponse, error) {
+func (s *shortenerServer) GetURL(ctx context.Context, in *pb.UrlGetRequest) (*pb.UrlGetResponse, error) {
 	var response pb.UrlGetResponse
 	// получает ссылку из хранилища
 	isDelete, longURL, err := s.storage.GetURL(in.ShortURL, "0")
@@ -83,7 +83,7 @@ func (s *shortenerServer) Ping(ctx context.Context, in *pb.Empty) (*pb.PingRespo
 }
 
 // GetUrls получаем все ссылки пользователя
-func (s *shortenerServer) GetUrls(ctx context.Context, in *pb.UrlsGetRequest) (*pb.UrlsGetResponse, error) {
+func (s *shortenerServer) GetURLs(ctx context.Context, in *pb.UrlsGetRequest) (*pb.UrlsGetResponse, error) {
 	var response pb.UrlsGetResponse
 	// получает ссылки из хранилища
 	userURLs, err := s.storage.GetUserURLs(in.UserID)
@@ -105,7 +105,7 @@ func (s *shortenerServer) GetUrls(ctx context.Context, in *pb.UrlsGetRequest) (*
 }
 
 // DeleteUrls принимает массив идентефикаторов сокращенных строк для удаления
-func (s *shortenerServer) DeleteUrls(ctx context.Context, in *pb.UrlsToDeleteRequest) (*pb.UrlsToDeleteResponse, error) {
+func (s *shortenerServer) DeleteURLs(ctx context.Context, in *pb.UrlsToDeleteRequest) (*pb.UrlsToDeleteResponse, error) {
 	var response pb.UrlsToDeleteResponse
 	// получаем айди
 	IDs := in.UrlIDs
