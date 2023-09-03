@@ -15,7 +15,7 @@ type StatsGetter interface {
 	GetStats() (int, int, error)
 }
 
-// GetURLsHandler возвращает все сокращённые ссылки юзера
+// GetStat возвращает все сокращённые ссылки и кол-во юзеров
 func GetStat(log *zap.SugaredLogger, statsGetter StatsGetter, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.api.userurls.GetURLsHandler"

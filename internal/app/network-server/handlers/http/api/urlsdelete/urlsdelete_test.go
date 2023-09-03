@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	mock_urlsdelete "github.com/gogapopp/shortener/internal/app/network-server/handlers/api/urlsdelete/mocks"
+	mock_urlsdelete "github.com/gogapopp/shortener/internal/app/network-server/handlers/http/api/urlsdelete/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"

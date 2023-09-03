@@ -10,7 +10,7 @@ import (
 
 	"github.com/gogapopp/shortener/internal/app/config"
 	"github.com/gogapopp/shortener/internal/app/lib/urlshortener"
-	mock_save "github.com/gogapopp/shortener/internal/app/network-server/handlers/api/save/mocks"
+	mock_save "github.com/gogapopp/shortener/internal/app/network-server/handlers/http/api/save/mocks"
 	"github.com/gogapopp/shortener/internal/app/storage"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"

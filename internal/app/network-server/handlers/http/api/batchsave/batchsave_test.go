@@ -9,7 +9,7 @@ import (
 
 	"github.com/gogapopp/shortener/internal/app/config"
 	"github.com/gogapopp/shortener/internal/app/lib/models"
-	mock_batchsave "github.com/gogapopp/shortener/internal/app/network-server/handlers/api/batchsave/mocks"
+	mock_batchsave "github.com/gogapopp/shortener/internal/app/network-server/handlers/http/api/batchsave/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"

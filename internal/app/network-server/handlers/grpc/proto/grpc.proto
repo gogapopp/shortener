@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+
+package grpc;
+
+
+option go_package = "grpc/proto";
+
+
+message UrlSaveRequest {
+    string longURL = 1; 
+}
+
+
+message UrlSaveResponse {
+    string shortURL = 1;
+}
+
+
+message UrlGetRequest {
+    string shortURL = 1;
+}
+
+
+message UrlGetResponse {
+    string longURL = 1;
+}
+
+
+message PingResponse {
+    string result = 1;
+}
+
+
+message UrlsGetRequest {
+    string userID = 1;
+}
+
+
+message UrlsGetResponse {
+    message UserUrl {
+        string originalURL = 1;
+		string shortURL = 2;
+    }
+    repeated UserUrl urls = 1;  
+}
+
+
+message UrlsToDeleteRequest {
+    repeated string UrlIDs = 1;
+    string userID = 2;
+}
+
+
+message UrlsToDeleteResponse {
+    string result = 1;
+}
+
+
+message BatchUrlsRequest {
+    message UrlsReq {
+        string correlationID = 1;
+        string longURL = 2;
+    }
+    repeated UrlsReq BatchUrlsReq = 1;
+    string userID = 2;
+}
+
+
+message BatchUrlsResponse {
+    message UrlsResp {
+        string correlationID = 1;
+        string shortURL = 2;
+    }
+    repeated UrlsResp BatchUrlsResp = 1;
+}
+
+
+message StatsResponse {
+    int32 urls = 1;
+    int32 users = 2;
+}
+
+
+message Empty {}
+
+
+service MultiService {
+    rpc SaveUrl (UrlSaveRequest) returns (UrlSaveResponse);
+    rpc GetUrl (UrlGetRequest) returns (UrlGetResponse);
+    rpc Ping (Empty) returns (PingResponse);
+    rpc GetUrls (UrlsGetRequest) returns (UrlsGetResponse);
+    rpc DeleteUrls (UrlsToDeleteRequest) returns (UrlsToDeleteResponse);
+    rpc BatchSave (BatchUrlsRequest) returns (BatchUrlsResponse);
+    rpc Stats (Empty) returns (StatsResponse);
+}

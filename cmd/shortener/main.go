@@ -5,6 +5,8 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"log"
+	"net"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -14,14 +16,15 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/gogapopp/shortener/internal/app/config"
 	"github.com/gogapopp/shortener/internal/app/lib/logger"
-	"github.com/gogapopp/shortener/internal/app/network-server/handlers/api/batchsave"
-	apisave "github.com/gogapopp/shortener/internal/app/network-server/handlers/api/save"
-	"github.com/gogapopp/shortener/internal/app/network-server/handlers/api/stats"
-	"github.com/gogapopp/shortener/internal/app/network-server/handlers/api/urlsdelete"
-	"github.com/gogapopp/shortener/internal/app/network-server/handlers/api/userurls"
-	"github.com/gogapopp/shortener/internal/app/network-server/handlers/ping"
-	"github.com/gogapopp/shortener/internal/app/network-server/handlers/redirect"
-	"github.com/gogapopp/shortener/internal/app/network-server/handlers/save"
+	mygrpc "github.com/gogapopp/shortener/internal/app/network-server/handlers/grpc"
+	"github.com/gogapopp/shortener/internal/app/network-server/handlers/http/api/batchsave"
+	apisave "github.com/gogapopp/shortener/internal/app/network-server/handlers/http/api/save"
+	"github.com/gogapopp/shortener/internal/app/network-server/handlers/http/api/stats"
+	"github.com/gogapopp/shortener/internal/app/network-server/handlers/http/api/urlsdelete"
+	"github.com/gogapopp/shortener/internal/app/network-server/handlers/http/api/userurls"
+	"github.com/gogapopp/shortener/internal/app/network-server/handlers/http/ping"
+	"github.com/gogapopp/shortener/internal/app/network-server/handlers/http/redirect"
+	"github.com/gogapopp/shortener/internal/app/network-server/handlers/http/save"
 	mwAuth "github.com/gogapopp/shortener/internal/app/network-server/middlewares/auth"
 	mwGzip "github.com/gogapopp/shortener/internal/app/network-server/middlewares/gzip"
 	mwLogger "github.com/gogapopp/shortener/internal/app/network-server/middlewares/logger"
@@ -29,6 +32,7 @@ import (
 	"github.com/gogapopp/shortener/internal/app/storage"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/acme/autocert"
+	"google.golang.org/grpc"
 )
 
 // go build flags
@@ -54,25 +58,33 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// получаем http или https сервер в зависимости от конфига
+	db, err := storage.Ping()
+	if err == nil {
+		defer db.Close()
+	}
+	// запускаем http или https сервер в зависимости от конфига
 	httpserver := RunHTTPServer(cfg, storage, log)
+	// получаем grpc сервер
+	grpcserver := RunGRPCServer(cfg, storage)
 
 	// реализация graceful shutdown
 	sigint := make(chan os.Signal, 1)
 	signal.Notify(sigint, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 	<-sigint
 
-	// проверяем установленно ли подключение к бд
-	db, err := storage.Ping()
-	if err == nil {
-		if err := db.Close(); err != nil {
-			log.Info("error close db conn:", err)
-		}
-	}
+	// // проверяем установленно ли подключение к бд
+	// db, err := storage.Ping()
+	// if err == nil {
+	// 	if err := db.Close(); err != nil {
+	// 		log.Info("error close db conn:", err)
+	// 	}
+	// }
 
+	// останавливаем grpc server
+	grpcserver.GracefulStop()
+	// останавливаем http server
 	if err := httpserver.Shutdown(context.Background()); err != nil {
-		log.Info("error shutdown the server:", err)
+		log.Info("error shutdown the httpserver:", err)
 	}
 }
 
@@ -91,6 +103,22 @@ func buildStdout() {
 	fmt.Printf("Build version: %s\n", buildVersion)
 	fmt.Printf("Build date: %s\n", buildDate)
 	fmt.Printf("Build commit: %s\n", buildCommit)
+}
+
+// RunGrpc запускает grpc
+func RunGRPCServer(cfg *config.Config, storage storage.Storage) *grpc.Server {
+	// получаем grpc сервер
+	grpcserver := mygrpc.NewGrpcServer(cfg, storage)
+	// определяем порт для grpc сервера
+	listen, err := net.Listen("tcp", ":8090")
+	if err != nil {
+		log.Fatal(err)
+	}
+	// запускаем grpc сервер
+	if err := grpcserver.Serve(listen); err != nil {
+		log.Fatal(err)
+	}
+	return grpcserver
 }
 
 // RunServer инициализирует роуты и мидлвееры, запускает сервер

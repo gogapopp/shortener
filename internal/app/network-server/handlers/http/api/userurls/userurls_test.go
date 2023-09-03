@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/gogapopp/shortener/internal/app/lib/models"
-	mock_userurls "github.com/gogapopp/shortener/internal/app/network-server/handlers/api/userurls/mocks"
+	mock_userurls "github.com/gogapopp/shortener/internal/app/network-server/handlers/http/api/userurls/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"

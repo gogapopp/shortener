@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	mock_ping "github.com/gogapopp/shortener/internal/app/network-server/handlers/ping/mocks"
+	mock_ping "github.com/gogapopp/shortener/internal/app/network-server/handlers/http/ping/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"

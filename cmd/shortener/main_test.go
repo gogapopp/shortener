@@ -11,12 +11,12 @@ import (
 
 	"github.com/gogapopp/shortener/internal/app/config"
 	"github.com/gogapopp/shortener/internal/app/lib/urlshortener"
-	"github.com/gogapopp/shortener/internal/app/network-server/handlers/api/batchsave"
-	apisave "github.com/gogapopp/shortener/internal/app/network-server/handlers/api/save"
-	"github.com/gogapopp/shortener/internal/app/network-server/handlers/api/urlsdelete"
-	"github.com/gogapopp/shortener/internal/app/network-server/handlers/ping"
-	"github.com/gogapopp/shortener/internal/app/network-server/handlers/redirect"
-	"github.com/gogapopp/shortener/internal/app/network-server/handlers/save"
+	"github.com/gogapopp/shortener/internal/app/network-server/handlers/http/api/batchsave"
+	apisave "github.com/gogapopp/shortener/internal/app/network-server/handlers/http/api/save"
+	"github.com/gogapopp/shortener/internal/app/network-server/handlers/http/api/urlsdelete"
+	"github.com/gogapopp/shortener/internal/app/network-server/handlers/http/ping"
+	"github.com/gogapopp/shortener/internal/app/network-server/handlers/http/redirect"
+	"github.com/gogapopp/shortener/internal/app/network-server/handlers/http/save"
 	"github.com/gogapopp/shortener/internal/app/storage"
 	"go.uber.org/zap"
 )
