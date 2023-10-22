@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// ExampleGetPingDBHandler пример работы с DeleteHandler
+// ExampleGetPingDBHandler example of working with DeleteHandler
 func ExampleDeleteHandler() {
 	request := `[
 		"MWmHmO",
@@ -25,5 +25,4 @@ func ExampleDeleteHandler() {
 	}
 	defer resp.Body.Close()
 	fmt.Println(resp.Status)
-
 }

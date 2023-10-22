@@ -1,4 +1,4 @@
-// package redirect содержит хендлер GetURLGetterHandler
+// package redirect contains the GetURLGetterHandler handler
 package redirect
 
 import (
@@ -10,23 +10,23 @@ import (
 	"go.uber.org/zap"
 )
 
-// URLGetter определяет метод GetURL
+// URLGetter defines the getURL method
 type URLGetter interface {
 	GetURL(shortURL, userID string) (bool, string, error)
 }
 
-// GetURLGetterHandler редиректит пользователя по ссылке которая соответсвует сокращённой
+// GetURLGetterHandler redirects the user to the link that corresponds to the abbreviated
 func GetURLGetterHandler(log *zap.SugaredLogger, urlGetter URLGetter, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.save.GetURLGetterHandler"
-		// получаем userID из контекста который был установлен мидлвеером userIdentity
+		// get the userID from the context that was set by the middleware UserIdentity
 		userID, err := auth.GetUserIDFromCookie(r)
 		if err != nil {
 			userID = auth.GenerateUniqueUserID()
 			auth.SetUserIDCookie(w, userID)
 		}
 		url := fmt.Sprintf("http://%s%s", r.Host, r.URL.Path)
-		// получает ссылку из хранилища
+		// gets a link from the repository
 		isDelete, longURL, err := urlGetter.GetURL(url, userID)
 		if isDelete {
 			http.Error(w, "url is deleted", http.StatusGone)
@@ -37,7 +37,6 @@ func GetURLGetterHandler(log *zap.SugaredLogger, urlGetter URLGetter, cfg *confi
 			http.Error(w, "url not found", http.StatusBadRequest)
 			return
 		}
-		// отправляем ответ
 		w.Header().Add("Location", longURL)
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	}

@@ -1,63 +1,63 @@
-// package models содержит в себе модели струтур данных
+// package models contains data structure models
 package models
 
-// модели структур
+// models of structures
 type (
-	// Request нужен для json прочтения body
+	// Request is needed for json reading of body
 	Request struct {
-		// принимает longURL
+		// accepts LongURL
 		URL string `json:"url"`
 	}
-	// Response нужен для json ответа
+	// Response is needed for a json response
 	Response struct {
-		// принимает shortURL
+		// accepts shortURL
 		ShortURL string `json:"result"`
 	}
-	// FileStorage нужен для записи в файл формата json
+	// FileStorage is needed to write to a json file
 	FileStorage struct {
-		// уникальный айди запроса
+		// unique request id
 		UUID     int    `json:"uuid"`
 		ShortURL string `json:"short_url"`
-		// принимает longURL
+		// accepts LongURL
 		OriginalURL string `json:"original_url"`
 	}
-	// BatchDatabaseResponse нужен для batch ответа сервера
+	// BatchDatabaseResponse is needed for the server's batch response
 	BatchDatabaseResponse struct {
-		// принимает shortURL
+		// accepts shortURL
 		ShortURL string
-		// принимает longURL
+		// accepts LongURL
 		OriginalURL string
-		// хранит уникальный айди
+		// stores a unique ID
 		CorrelationID string
-		// айди пользователя
+		// user id
 		UserID string
 	}
-	// BatchRequest нужен для json прочтения body
+	// Batch Request is needed for json reading of body
 	BatchRequest struct {
-		// хранит уникальный айди
+		// stores a unique ID
 		CorrelationID string `json:"correlation_id"`
-		// принимает longURL
+		// accepts LongURL
 		OriginalURL string `json:"original_url"`
 	}
-	// BatchResponse нужен для json ответа
+	// BatchResponse is needed for json response
 	BatchResponse struct {
-		// хранит уникальный айди
+		// stores a unique ID
 		CorrelationID string `json:"correlation_id"`
-		// принимает shortURL
+		// accepts shortURL
 		ShortURL string `json:"short_url"`
 	}
 	// UserURLs
 	UserURLs struct {
-		// принимает longURL
+		// accepts LongURL
 		OriginalURL string `json:"original_url"`
-		// принимает shortURL
+		// accepts shortURL
 		ShortURL string `json:"short_url"`
 	}
 	// Stats
 	Stasts struct {
-		// количество сокращённых URL в сервисе
+		// number of shortener URLs in the service
 		URLs int `json:"urls"`
-		// количество пользователей в сервисе
+		// number of users in the service
 		UserIDs int `json:"users"`
 	}
 )

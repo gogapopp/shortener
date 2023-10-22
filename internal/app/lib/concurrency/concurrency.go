@@ -1,18 +1,19 @@
-// package concurrency содержит код реализации конкурентной обработки идентификаторов
+// package concurrency contains code for implementing competitive id processing
 package concurrency
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 )
 
-// URLDeleter определяет метод SetDeleteFlag
+// URLDeleter defines the SetDeleteFlag method
 type URLDeleter interface {
 	SetDeleteFlag(IDs []string, userID string) error
 }
 
-// ProcessIDs конкурентно обрабатывает идентификаторы сокращённых ссылок
+// ProcessIDs competitively handles abbreviated link IDs
 func ProcessIDs(IDs []string, reqURL string, urlDeleter URLDeleter, userID string) {
 	idsCh := make(chan string, len(IDs)+2)
 	urlsCh := make(chan string, len(IDs)+2)
@@ -44,5 +45,8 @@ func ProcessIDs(IDs []string, reqURL string, urlDeleter URLDeleter, userID strin
 	for url := range urlsCh {
 		urls = append(urls, url)
 	}
-	_ = urlDeleter.SetDeleteFlag(urls, userID)
+	err := urlDeleter.SetDeleteFlag(urls, userID)
+	if err != nil {
+		log.Printf("failed set delete flag: %s", err)
+	}
 }

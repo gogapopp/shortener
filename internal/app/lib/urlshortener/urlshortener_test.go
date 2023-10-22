@@ -11,11 +11,11 @@ func TestShortenerURL(t *testing.T) {
 	baseAddr := "https://www.example.com"
 	shortURLs := make(map[string]string)
 
-	// заполняем мапу 10-ю ссылками, в цикле проверяем уникальность каждой
+	// we fill the map with 10 links, in the loop we check the uniqueness of each
 	for i := 0; i < 10; i++ {
 		shortURL := ShortenerURL(baseAddr)
 		assert.False(t, strings.HasPrefix(shortURL, baseAddr+"/"))
-		// проверяем есть ли такой shortURL
+		// checking if there is such a shortURL
 		_, ok := shortURLs[shortURL]
 		assert.False(t, ok)
 		shortURLs[shortURL] = shortURL

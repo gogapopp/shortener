@@ -1,4 +1,4 @@
-// package save содержит в себе код хендлера PostSaveJSONHandler
+// package save contains the PostSaveJSONHandler handler code
 package save
 
 import (
@@ -15,23 +15,23 @@ import (
 	"go.uber.org/zap"
 )
 
-// URLSaver определяет метод SaveURL и GetShortURL
+// URLSaver defines the SaveURL and GetShortURL methods
 type URLSaver interface {
 	SaveURL(longURL, shortURL, correlationID string, userID string) error
 	GetShortURL(longURL string) string
 }
 
-// PostSaveJSONHandler принимает в JSON формате url и возвращает сокращенный URL
+// PostSaveJSONHandler accepts a url in JSON format and returns an abbreviated URL
 func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.api.save.PostSaveJSONHandler"
-		// получаем userID из контекста который был установлен мидлвеером userIdentity
+		// getting the user ID from the context that was set by the middleware userIdentity
 		userID, err := auth.GetUserIDFromCookie(r)
 		if err != nil {
 			userID = auth.GenerateUniqueUserID()
 			auth.SetUserIDCookie(w, userID)
 		}
-		// декодируем данные из тела запроса
+		// decoding data from the request body
 		var resp models.Response
 		var req models.Request
 		err = json.NewDecoder(r.Body).Decode(&req)
@@ -40,24 +40,24 @@ func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}
-		// проверяем является ли ссылка переданная в body валидной
+		// check whether the link passed to the body is valid
 		_, err = url.ParseRequestURI(req.URL)
 		if err != nil {
 			log.Infof("%s: %s", op, err)
 			http.Error(w, "invalid request body", http.StatusBadRequest)
 			return
 		}
-		// делаем из обычной ссылки сжатую
+		// making a compressed link from a regular link
 		shortURL := urlshortener.ShortenerURL(cfg.BaseAddr)
-		// сохраняем короткую ссылку
+		// saving a short link
 		err = urlSaver.SaveURL(req.URL, shortURL, "", userID)
 		if err != nil {
 			log.Infof("%s: %s", op, err)
 			if errors.Is(postgres.ErrURLExists, err) {
 				shortURL = urlSaver.GetShortURL(req.URL)
-				// передаём значение в ответ
+				// passing the value in response
 				resp.ShortURL = shortURL
-				// устанавливаем заголовок Content-Type и отправляем ответ
+				// setting the Content-Type header and sending the response
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusConflict)
 				if err := json.NewEncoder(w).Encode(resp); err != nil {
@@ -70,9 +70,9 @@ func PostSaveJSONHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}
-		// передаём значение в ответ
+		// passing the value in response
 		resp.ShortURL = shortURL
-		// устанавливаем заголовок Content-Type и отправляем ответ
+		// setting the Content-Type header and sending the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		if err := json.NewEncoder(w).Encode(resp); err != nil {

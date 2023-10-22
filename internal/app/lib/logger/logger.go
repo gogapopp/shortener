@@ -1,4 +1,4 @@
-// package logger создаёт экземляр логера
+// package logger creates a logger instance
 package logger
 
 import (
@@ -12,10 +12,10 @@ import (
 	"go.uber.org/zap"
 )
 
-// содержит в себе логгер
+// contains a logger
 var Log *zap.SugaredLogger
 
-// NewLogger создаём логгер
+// NewLogger creating a logger
 func NewLogger() (*zap.SugaredLogger, error) {
 	logger, err := zap.NewProduction()
 	if err != nil {
@@ -28,24 +28,22 @@ func NewLogger() (*zap.SugaredLogger, error) {
 	return Sugar, nil
 }
 
-// RequestBatchJSONLogger логирует все batch json запросы
+// RequestBatchJSONLogger logs all batch json requests
 func RequestBatchJSONLogger(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		// читаем боди запоса
+		// reading the request body
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			log.Fatal(err)
 		}
-		// декодируем json чтоб выводить строку в логи без лишних пробелов
+		// decode json to output a string to logs without extra spaces
 		var b []models.BatchRequest
 		err = json.Unmarshal([]byte(body), &b)
 		if err != nil {
 			log.Fatal(err)
 		}
-		// возвращаем данные обратно
+		// returning the data back
 		r.Body = io.NopCloser(bytes.NewBuffer(body))
-
 		h(w, r)
 		Log.Info("POST request",
 			"URL", r.Host,

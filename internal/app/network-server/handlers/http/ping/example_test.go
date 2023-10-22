@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// ExampleGetPingDBHandler пример работы с GetPingDBHandler
+// ExampleGetPingDBHandler example of working with GetPingDBHandler
 func ExampleGetPingDBHandler() {
 	c := http.Client{}
 	req, err := http.NewRequest(http.MethodDelete, "localhost:8080/ping", nil)

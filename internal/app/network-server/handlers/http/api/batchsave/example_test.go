@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// ExampleGetPingDBHandler пример работы с PostBatchJSONhHandler
+// ExampleGetPingDBHandler example of working with PostBatchJSONhHandler
 func ExamplePostBatchJSONhHandler() {
 	request := `
 	[

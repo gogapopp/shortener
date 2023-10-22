@@ -1,4 +1,4 @@
-// package batchsave содержит реализацию хендлера PostBatchJSONhHandler
+// package batchsave contains an implementation of the PostBatchJSONhHandler handler
 package batchsave
 
 import (
@@ -13,16 +13,16 @@ import (
 	"go.uber.org/zap"
 )
 
-// BatchSaver определяет метод batch сохранения URLs
+// BatchSave defines the batch method for saving URLs
 type BatchSaver interface {
 	BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error
 }
 
-// PostBatchJSONhHandler принимает на вход массив структур ссылок для сокращения и в ответ массив структур сокращённых ссылки в формате json
+// PostBatchJSONhHandler accepts an array of shortened link structures as input and in response an array of shortened link structures in json format
 func PostBatchJSONhHandler(log *zap.SugaredLogger, batchSaver BatchSaver, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.api.save.PostBatchJSONhHandler"
-		// получаем userID из контекста который был установлен мидлвеером userIdentity
+		// getting the userID from the context that was set by the middleware UserIdentity
 		userID, err := auth.GetUserIDFromCookie(r)
 		if err != nil {
 			userID = auth.GenerateUniqueUserID()
@@ -37,26 +37,25 @@ func PostBatchJSONhHandler(log *zap.SugaredLogger, batchSaver BatchSaver, cfg *c
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}
-		// начинаем проходить по реквесту
+		// we are starting to go through the request
 		for k := range req {
-			// проверяем является ли переданное значение ссылкой
+			// check whether the passed value is a reference
 			_, err = url.ParseRequestURI(req[k].OriginalURL)
 			if err != nil {
 				log.Infof("%s: %s", op, err)
 				http.Error(w, "invalid request", http.StatusBadRequest)
 				return
 			}
-			// "сжимаем" ссылку
+			// "compress" the link
 			BatchShortURL := urlshortener.ShortenerURL(cfg.BaseAddr)
-
-			// собираем данные для отправки в бд
+			// collecting data to send to the database
 			databaseResp = append(databaseResp, models.BatchDatabaseResponse{
 				ShortURL:      BatchShortURL,
 				OriginalURL:   req[k].OriginalURL,
 				CorrelationID: req[k].CorrelationID,
 				UserID:        userID,
 			})
-			// собираем json ответ
+			// collecting a json response
 			resp = append(resp, models.BatchResponse{
 				ShortURL:      BatchShortURL,
 				CorrelationID: req[k].CorrelationID,
@@ -68,7 +67,7 @@ func PostBatchJSONhHandler(log *zap.SugaredLogger, batchSaver BatchSaver, cfg *c
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}
-		// устанавливаем заголовок Content-Type и отправляем ответ
+		// setting the Content-Type header and sending the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		if err := json.NewEncoder(w).Encode(resp); err != nil {

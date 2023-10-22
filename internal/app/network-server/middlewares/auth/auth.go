@@ -1,4 +1,5 @@
-// package auth содержит в себе код аутентификации
+// package auth contains the authentication code
+// TODO: need to ref.
 package auth
 
 import (
@@ -13,13 +14,13 @@ import (
 	"go.uber.org/zap"
 )
 
-// secretKey секретный ключ
+// secret Key secret key but no longer secret
 var secretKey = []byte("secret-key")
 
-// nextUserID записывает в себя айди пользователя
+// nextUserID records the user's ID
 var nextUserID = 0
 
-// AuthMiddleware аутентифицирует пользователя с помощью cookie
+// AuthMiddleware authenticates the user using cookies
 func AuthMiddleware(log *zap.SugaredLogger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		log.Info("auth middleware enabled")
@@ -38,7 +39,7 @@ func AuthMiddleware(log *zap.SugaredLogger) func(next http.Handler) http.Handler
 	}
 }
 
-// GetUserIDFromCookie получает айди пользователя из cookie
+// GetUserIDFromCookie gets user ID from cookie
 func GetUserIDFromCookie(r *http.Request) (string, error) {
 	const op = "middlewares.auth.GetUserIDFromCookie"
 
@@ -63,7 +64,7 @@ func GetUserIDFromCookie(r *http.Request) (string, error) {
 	return userID, nil
 }
 
-// SetUserIDCookie устанавливает cookie пользователю
+// SetUserIDCookie sets a cookie to the user
 func SetUserIDCookie(w http.ResponseWriter, userID string) {
 	signature := GenerateSignature(userID)
 	value := fmt.Sprintf("%s|%s", userID, signature)
@@ -75,14 +76,14 @@ func SetUserIDCookie(w http.ResponseWriter, userID string) {
 	})
 }
 
-// GenerateSignature создаёт зашифрованную сигнатуру
+// GenerateSignature creates an encrypted signature
 func GenerateSignature(userID string) string {
 	h := hmac.New(sha256.New, secretKey)
 	h.Write([]byte(userID))
 	return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
 
-// GenerateUniqueUserID() создаёт пользователю уникальный айди
+// GenerateUniqueUserID creates a unique ID for the user
 func GenerateUniqueUserID() string {
 	nextUserID++
 	return strconv.Itoa(nextUserID)

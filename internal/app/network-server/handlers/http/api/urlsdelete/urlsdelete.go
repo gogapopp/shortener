@@ -1,4 +1,4 @@
-// package urlsdelete содержит код хендлера DeleteHandler
+// package url delete contains the handler code DeleteHandler
 package urlsdelete
 
 import (
@@ -13,22 +13,22 @@ import (
 	"go.uber.org/zap"
 )
 
-// URLDeleter определяет метод SetDeleteFlag
+// URLDeleter defines the SetDeleteFlag method
 type URLDeleter interface {
 	SetDeleteFlag(IDs []string, userID string) error
 }
 
-// DeleteHandler хендлер который принимает массив идентефикаторов сокращенных строк для удаления
+// DeleteHandler эндлер кото-рый распознает мас - сив и идентификатор сокра - ченных строк для удаления
 func DeleteHandler(log *zap.SugaredLogger, urlDeleter URLDeleter, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.api.urlsdelete.PostSaveHandler"
-		// получаем userID из контекста который был установлен мидлвеером userIdentity
+		// get the userID from the context that was set by the middleware UserIdentity
 		userID, err := auth.GetUserIDFromCookie(r)
 		if err != nil {
 			userID = auth.GenerateUniqueUserID()
 			auth.SetUserIDCookie(w, userID)
 		}
-		// читаем тело реквеста
+		// reading the body of the request
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			log.Infof("%s: %s", op, err)

@@ -1,4 +1,3 @@
-// package userurls содержит код хендлера GetURLsHandler
 package userurls
 
 import (
@@ -11,22 +10,22 @@ import (
 	"go.uber.org/zap"
 )
 
-// UserURLsGetter определяет метод GetUserURLs
+// UserURLsGetter defines the getUser URLs method
 type UserURLsGetter interface {
 	GetUserURLs(userID string) ([]models.UserURLs, error)
 }
 
-// GetURLsHandler возвращает все сокращённые ссылки юзера
+// GetURLsHandler returns all shortened user links
 func GetURLsHandler(log *zap.SugaredLogger, userURLsGetter UserURLsGetter, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.api.userurls.GetURLsHandler"
-		// получаем userID из контекста который был установлен мидлвеером userIdentity
+		// get the userID from the context that was set by the middleware UserIdentity
 		userID, err := auth.GetUserIDFromCookie(r)
 		if err != nil {
 			userID = auth.GenerateUniqueUserID()
 			auth.SetUserIDCookie(w, userID)
 		}
-		// получает ссылки из хранилища
+		// gets links from the repository
 		userURLs, err := userURLsGetter.GetUserURLs(userID)
 		if err != nil {
 			log.Infof("%s: %s", op, err)
@@ -37,7 +36,7 @@ func GetURLsHandler(log *zap.SugaredLogger, userURLsGetter UserURLsGetter, cfg *
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
-		// устанавливаем заголовок Content-Type и отправляем ответ
+		// setting the Content-Type header and sending the response
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(userURLs); err != nil {
 			log.Infof("%s: %s", op, err)

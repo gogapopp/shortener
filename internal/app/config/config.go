@@ -1,4 +1,4 @@
-// package config предназначен для парсинга флагов и env в структуру Config
+// package config is intended for parsing flags and env
 package config
 
 import (
@@ -10,46 +10,46 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
-// Config содержит параметры конфигурации для приложения
+// Config contains the configuration parameters for the application
 type Config struct {
-	// адрес для запуска сервера
+	// address to start the server
 	RunAddr string `env:"SERVER_ADDRESS" json:"server_address"`
-	// адрес хоста для запуска сервера
+	// host address to start the server
 	BaseAddr string `env:"BASE_URL" json:"base_url"`
-	// название для файла записи
+	// name for the record file
 	FileStoragePath string `env:"FILE_STORAGE_PATH" json:"file_storage_path"`
-	// данные для подключения к БД
+	// data for connecting to the database
 	DatabasePath string `env:"DATABASE_DSN" json:"database_dsn"`
-	// содержит переменную для включения TLS сертификата для сервера
+	// contains a variable for enabling the TLS certificate for the server
 	HTTPSEnable bool `env:"ENABLE_HTTPS" json:"enable_https"`
-	// разрешённые адреса для /api/internal/stats
+	// allowed addresses for /api/internal/stats
 	TrustedSubnet string `env:"TRUSTED_SUBNET" json:"trusted_subnet"`
 }
 
-// ParseConfig парсит флаги и переменные окружения при запуске программы
+// ParseConfig parses flags and environment variables at program startup
 func ParseConfig() *Config {
 	var cfg Config
 	var fileConfig Config
-	// получаем путь к файлу config.json
+	// get the path to the config.json file
 	configpath := os.Getenv("CONFIG")
 	if configpath == "" {
 		flag.StringVar(&configpath, "c", "", "config.json file path")
 	}
-	// записываем флаги в конфиг
-	flag.StringVar(&cfg.RunAddr, "a", "localhost:8080", "address and port to run server")
+	// writing the flags to the config
+	flag.StringVar(&cfg.RunAddr, "a", "0.0.0.0:8080", "address and port to run server")
 	flag.StringVar(&cfg.BaseAddr, "b", "http://localhost:8080/", "base url")
 	flag.StringVar(&cfg.FileStoragePath, "f", "", "file storage path")
 	flag.StringVar(&cfg.DatabasePath, "d", "", "database path")
 	flag.BoolVar(&cfg.HTTPSEnable, "s", false, "https enable")
 	flag.StringVar(&cfg.TrustedSubnet, "t", "", "subnet")
 	flag.Parse()
-	// парсим config.json
+	// parse config.json
 	if configpath != "" {
 		fileConfig = ParseConfigFile(configpath)
 	}
-	// записываем env в конфиг
+	// writing end in the config
 	cleanenv.ReadEnv(&cfg)
-	// записываем config.json
+	// writing config.json
 	if cfg.BaseAddr == "" {
 		cfg.BaseAddr = fileConfig.BaseAddr
 	}
@@ -65,17 +65,17 @@ func ParseConfig() *Config {
 	if cfg.TrustedSubnet == "" {
 		cfg.TrustedSubnet = fileConfig.TrustedSubnet
 	}
-	// если cfg.HTTPSEnable false
+	// if cfg.HTTPSEnable false
 	if !cfg.HTTPSEnable {
 		cfg.HTTPSEnable = fileConfig.HTTPSEnable
 	}
 	return &cfg
 }
 
-// ParseConfigFile парсит конфиг из файла config.json
+// ParseConfigFile parses config from config.json file
 func ParseConfigFile(configpath string) Config {
 	var fileConfig Config
-	// записываем конфиг из config.json
+	// writing the config from config.json
 	file, err := os.Open(configpath)
 	if err != nil {
 		log.Fatalf("error read config.json file: %s", err)

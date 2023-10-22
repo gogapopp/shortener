@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// SubnetMiddleware проверяет IP адресс клиента, входит ли он в доверенную подсеть
+// SubnetMiddleware checks the client's IP address, whether it is included in a trusted subnet
 func SubnetMiddleware(log *zap.SugaredLogger, subnet string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		log.Info("subnet middleware enabled")
@@ -17,20 +17,19 @@ func SubnetMiddleware(log *zap.SugaredLogger, subnet string) func(next http.Hand
 				http.Error(w, "untrusted ip", http.StatusForbidden)
 				return
 			}
-			// парсим subnet в IP
+			// parse subnet to IP
 			subnetIP := net.ParseIP(subnet)
-			// смотрим заголовок X-Real-IP
+			// look at the X-Real-IP header
 			ipStr := r.Header.Get("X-Real-IP")
 			ip := net.ParseIP(ipStr)
-			// если заголовок пуст
+			// if the header is empty
 			if ip == nil {
-				// если заголовок X-Real-IP пуст, пробуем X-Forwarded-For
+				// if the X-Real-IP header is empty, try X-Forwarded-For
 				ips := r.Header.Get("X-Forwarded-For")
-				// разделяем цепочку адресов
+				// separating the chain of addresses
 				ipStrings := strings.Split(ips, ",")
-				// интересует только первый
+				// interested only in the first
 				ipStr = ipStrings[0]
-				// парсим
 				ip = net.ParseIP(ipStr)
 			}
 			if ip == nil {

@@ -42,53 +42,42 @@ var (
 	buildCommit  string
 )
 
-// main реализует вызов всех компонентов нужных для работы сервера и запускает сервер
 func main() {
 	// build stdout
 	buildStdout()
-	// парсим конфиг
 	cfg := config.ParseConfig()
-	// инициализируем логер
 	log, err := logger.NewLogger()
 	if err != nil {
 		log.Fatal(err)
 	}
-	// подключаем хранилище
+	// connecting to the storage
 	storage, err := storage.NewRepo(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
+	// if postgres is connected, then do not forget to close the connection
 	db, err := storage.Ping()
 	if err == nil {
 		defer db.Close()
 	}
-	// запускаем http или https сервер в зависимости от конфига
+	// running http or https server depending on the config
 	httpserver := RunHTTPServer(cfg, storage, log)
-	// получаем grpc сервер
+	// getting an rpc server
 	grpcserver := RunGRPCServer(cfg, storage)
 
-	// реализация graceful shutdown
+	// graceful shutdown
 	sigint := make(chan os.Signal, 1)
 	signal.Notify(sigint, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 	<-sigint
 
-	// // проверяем установленно ли подключение к бд
-	// db, err := storage.Ping()
-	// if err == nil {
-	// 	if err := db.Close(); err != nil {
-	// 		log.Info("error close db conn:", err)
-	// 	}
-	// }
-
-	// останавливаем grpc server
 	grpcserver.GracefulStop()
-	// останавливаем http server
+
 	if err := httpserver.Shutdown(context.Background()); err != nil {
 		log.Info("error shutdown the httpserver:", err)
 	}
 }
 
-// buildStdout выводит в строку терминала build version, build date, build commit
+// buildStdout outputs the build version, build date, and build commit to the settings line
 func buildStdout() {
 	if buildVersion == "" {
 		buildVersion = "N/A"
@@ -105,25 +94,23 @@ func buildStdout() {
 	fmt.Printf("Build commit: %s\n", buildCommit)
 }
 
-// RunGrpc запускает grpc
+// RunGrpc starts grpc
 func RunGRPCServer(cfg *config.Config, storage storage.Storage) *grpc.Server {
-	// получаем grpc сервер
+	// getting an grpc server
 	grpcserver := mygrpc.NewGrpcServer(cfg, storage)
-	// определяем порт для grpc сервера
 	listen, err := net.Listen("tcp", ":8090")
 	if err != nil {
 		log.Fatal(err)
 	}
-	// запускаем grpc сервер
+	// launching the grpc server
 	if err := grpcserver.Serve(listen); err != nil {
 		log.Fatal(err)
 	}
 	return grpcserver
 }
 
-// RunServer инициализирует роуты и мидлвееры, запускает сервер
+// RunServer initializes routers and middleweers, starts the server
 func RunHTTPServer(cfg *config.Config, storage storage.Storage, log *zap.SugaredLogger) *http.Server {
-	// подключаем роуты и мидлвееры
 	r := chi.NewRouter()
 	r.Use(mwAuth.AuthMiddleware(log))
 	r.Use(mwGzip.GzipMiddleware(log))
@@ -139,25 +126,22 @@ func RunHTTPServer(cfg *config.Config, storage storage.Storage, log *zap.Sugared
 		r.With(subnet.SubnetMiddleware(log, cfg.TrustedSubnet)).Get("/api/internal/stats", stats.GetStat(log, storage, cfg))
 	})
 	r.Mount("/debug/pprof", pprofRoutes())
-
-	// настраиваем http сервер
 	server := &http.Server{
 		Addr:    cfg.RunAddr,
 		Handler: r,
 	}
-
 	if cfg.HTTPSEnable {
 		manager := &autocert.Manager{
 			Prompt: autocert.AcceptTOS,
-			// создаём директорию для кэширования сертификатов
+			// creating a directory for caching certificates
 			Cache: autocert.DirCache("certs"),
-			// адреса которые удовлетворяют сертификату
+			// addresses that satisfy the certificate
 			HostPolicy: autocert.HostWhitelist(cfg.RunAddr),
 		}
 		server = &http.Server{
 			TLSConfig: &tls.Config{GetCertificate: manager.GetCertificate},
 		}
-		// запуск сервер с TLS сертификатом
+		// running a server with a TLS certificate
 		go func() {
 			log.Info("Running the server at: ", cfg.RunAddr, " with TLS certificate")
 			if err := server.ListenAndServeTLS("", ""); err != http.ErrServerClosed {
@@ -165,7 +149,7 @@ func RunHTTPServer(cfg *config.Config, storage storage.Storage, log *zap.Sugared
 			}
 		}()
 	} else {
-		// запуск сервера без TLS сертификата
+		// starting the server without a TLS certificate
 		go func() {
 			log.Info("Running the server at: ", cfg.RunAddr)
 			if err := server.ListenAndServe(); err != http.ErrServerClosed {
@@ -177,7 +161,7 @@ func RunHTTPServer(cfg *config.Config, storage storage.Storage, log *zap.Sugared
 	return server
 }
 
-// pprofRoutes возвращает хендлеры нужные для профилирования
+// pprofRoutes returns the handlers needed for profiling
 func pprofRoutes() *chi.Mux {
 	r := chi.NewRouter()
 	r.Handle("/heap", pprof.Handler("heap"))

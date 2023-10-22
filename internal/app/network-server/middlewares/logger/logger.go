@@ -1,4 +1,4 @@
-// package logger соддержит обработчик для логирования всех запросов на сервер
+// package logger contains a handler for logging all requests to the server
 package logger
 
 import (
@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// NewLogger логирует каждый запрос
+// NewLogger logs every request
 func NewLogger(log *zap.SugaredLogger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		log.Info("logger middleware enabled")

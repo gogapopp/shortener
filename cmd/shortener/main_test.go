@@ -30,13 +30,10 @@ func BenchmarkPostSaveHandler(b *testing.B) {
 		BaseAddr: "http://localhost:8080/",
 	}
 	storage, _ := storage.NewRepo(cfg)
-	// инициализация хендлера
 	handler := save.PostSaveHandler(sugar, storage, cfg)
 
-	// Запуск бенчмарка
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
-		// создание тестового запроса
 		testURL := urlshortener.ShortenerURL(cfg.BaseAddr)
 		body := strings.NewReader(testURL)
 		req, err := http.NewRequest("POST", "/", body)
@@ -58,13 +55,10 @@ func BenchmarkPostSaveJSONHandler(b *testing.B) {
 		BaseAddr: "http://localhost:8080/",
 	}
 	storage, _ := storage.NewRepo(cfg)
-	// инициализация хендлера
 	handler := apisave.PostSaveJSONHandler(sugar, storage, cfg)
 
-	// запуск бенчмарка
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
-		// создание тестового запроса
 		testURL := urlshortener.ShortenerURL(cfg.BaseAddr)
 		body := testURL
 		data := map[string]string{"url": body}
@@ -88,10 +82,9 @@ func BenchmarkGetURLGetterHandler(b *testing.B) {
 		BaseAddr: "http://localhost:8080/",
 	}
 	storage, _ := storage.NewRepo(cfg)
-	// инициализация хендлера
 	handler := redirect.GetURLGetterHandler(sugar, storage, cfg)
 
-	// сохраняем ссылку в бд
+	// saving the link in the database
 	handlerSave := save.PostSaveHandler(sugar, storage, cfg)
 	testURL := urlshortener.ShortenerURL(cfg.BaseAddr)
 	body := strings.NewReader(testURL)
@@ -101,20 +94,16 @@ func BenchmarkGetURLGetterHandler(b *testing.B) {
 	}
 	rr := httptest.NewRecorder()
 	handlerSave.ServeHTTP(rr, req)
-	// Чтение тела ответа
 	respBody, err := io.ReadAll(rr.Body)
 	if err != nil {
 		b.Fatal(err)
 	}
-	// запуск бенчмарка
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
-		// создаём реквест
 		req, err := http.NewRequest("GET", string(respBody), nil)
 		if err != nil {
 			b.Fatal(err)
 		}
-		// создание тестового запроса
 		rr := httptest.NewRecorder()
 		b.StartTimer()
 		handler.ServeHTTP(rr, req)
@@ -130,16 +119,13 @@ func BenchmarkGetPingDBHandler(b *testing.B) {
 		BaseAddr: "http://localhost:8080/",
 	}
 	storage, _ := storage.NewRepo(cfg)
-	// инициализация хендлера
 	handler := ping.GetPingDBHandler(sugar, storage, cfg)
 
-	// создание тестового запроса
 	req, err := http.NewRequest("GET", "/ping", nil)
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	// запуск бенчмарка
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
 		rr := httptest.NewRecorder()
@@ -157,13 +143,10 @@ func BenchmarkPostBatchJSONhHandler(b *testing.B) {
 		BaseAddr: "http://localhost:8080/",
 	}
 	storage, _ := storage.NewRepo(cfg)
-	// инициализация хендлера
 	handler := batchsave.PostBatchJSONhHandler(sugar, storage, cfg)
 
-	// запуск бенчмарка
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
-		// создание тестового запроса
 		type Data struct {
 			CorrelationID string `json:"correlation_id"`
 			OriginalURL   string `json:"original_url"`
@@ -184,7 +167,6 @@ func BenchmarkPostBatchJSONhHandler(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		// создание тестового запроса
 		rr := httptest.NewRecorder()
 		b.StartTimer()
 		handler.ServeHTTP(rr, req)
@@ -201,7 +183,6 @@ func BenchmarkDeleteHandler(b *testing.B) {
 		// DatabasePath: "",
 	}
 	storage, _ := storage.NewRepo(cfg)
-	// инициализация хендлера
 	handler := urlsdelete.DeleteHandler(sugar, storage, cfg)
 
 	data := []string{"MWmHmO",
@@ -221,7 +202,6 @@ func BenchmarkDeleteHandler(b *testing.B) {
 		Value: "user_1|dXYCnu4AZYELoxU2SrRL6OEXUqvQ8+4SOD9Q/Rw0dxI=",
 	}
 	req.AddCookie(cookie)
-	// запуск бенчмарка
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
 		rr := httptest.NewRecorder()

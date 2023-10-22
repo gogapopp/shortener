@@ -1,4 +1,4 @@
-// package save содержит код хендлера PostSaveHandler
+// package save contains the PostSaveHandler handler code
 package save
 
 import (
@@ -15,23 +15,23 @@ import (
 	"go.uber.org/zap"
 )
 
-// URLSaver определяет методы SaveURL и GetShortURL
+// URLSaver defines the SaveURL and GetShortURL methods
 type URLSaver interface {
 	SaveURL(longURL, shortURL, correlationID string, userID string) error
 	GetShortURL(longURL string) string
 }
 
-// PostSaveHandler принимает ссылку в виде строки и возвращает сокращённую
+// PostSaveHandler accepts a link as a string and returns an abbreviated
 func PostSaveHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.save.PostSaveHandler"
-		// получаем userID из контекста который был установлен мидлвеером userIdentity
+		// get the userID from the context that was set by the middleware UserIdentity
 		userID, err := auth.GetUserIDFromCookie(r)
 		if err != nil {
 			userID = auth.GenerateUniqueUserID()
 			auth.SetUserIDCookie(w, userID)
 		}
-		// читаем тело реквеста
+		// reading the body of the request
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			log.Infof("%s: %s", op, err)
@@ -39,7 +39,7 @@ func PostSaveHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.Conf
 			return
 		}
 		bodyURL := string(body)
-		// проверяем является ли ссылка переданная в body валидной
+		// check whether the link passed to the body is valid
 		_, err = url.ParseRequestURI(bodyURL)
 		if err != nil {
 			log.Infof("%s: %s", op, err)
@@ -47,9 +47,9 @@ func PostSaveHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.Conf
 			return
 		}
 		log.Infof("%s", body)
-		// делаем из обычной ссылки сжатую
+		// making a compressed link from a regular link
 		shortURL := urlshortener.ShortenerURL(cfg.BaseAddr)
-		// сохраняем короткую ссылку
+		// saving a short link
 		err = urlSaver.SaveURL(bodyURL, shortURL, "", userID)
 		if err != nil {
 			log.Infof("%s: %s", op, err)
@@ -63,7 +63,7 @@ func PostSaveHandler(log *zap.SugaredLogger, urlSaver URLSaver, cfg *config.Conf
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}
-		// отправляем ответ
+		// sending a response
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusCreated)
 		fmt.Fprint(w, shortURL)

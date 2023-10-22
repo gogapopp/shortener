@@ -10,35 +10,35 @@ import (
 	"go.uber.org/zap"
 )
 
-// StatsGetter определяет метод GetStats
+// StatsGetter defines the GetStats method
 type StatsGetter interface {
 	GetStats() (int, int, error)
 }
 
-// GetStat возвращает все сокращённые ссылки и кол-во юзеров
+// GetStat returns all abbreviated links and the number of users
 func GetStat(log *zap.SugaredLogger, statsGetter StatsGetter, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.api.userurls.GetURLsHandler"
-		// получаем userID из контекста который был установлен мидлвеером userIdentity
+		// getting the userID from the context that was set by the middleware UserIdentity
 		userID, err := auth.GetUserIDFromCookie(r)
 		if err != nil {
 			userID = auth.GenerateUniqueUserID()
 			auth.SetUserIDCookie(w, userID)
 		}
 		_ = userID
-		// получает статистику из хранилища из хранилища
+		// gets statistics from the repository from the repository
 		shortURLcount, userIDcount, err := statsGetter.GetStats()
 		if err != nil {
 			log.Infof("%s: %s", op, err)
 			http.Error(w, "something went wrong", http.StatusInternalServerError)
 			return
 		}
-		// формируем ответ
+		// forming a response
 		resp := models.Stasts{
 			URLs:    shortURLcount,
 			UserIDs: userIDcount,
 		}
-		// устанавливаем заголовок Content-Type и отправляем ответ
+		// setting the Content-Type header and sending the response
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			log.Infof("%s: %s", op, err)

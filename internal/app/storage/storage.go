@@ -1,4 +1,4 @@
-// package storage содержит описание методов хранилища
+// package storage contains a description of storage methods
 package storage
 
 import (
@@ -11,7 +11,7 @@ import (
 	"github.com/gogapopp/shortener/internal/app/storage/postgres"
 )
 
-// Storage определяет методы хранилища storage
+// Storage defines storage storage methods
 //
 //go:generate mockgen -source=storage.go -destination=storagemocks/mock.go
 type Storage interface {
@@ -25,7 +25,7 @@ type Storage interface {
 	Ping() (*sql.DB, error)
 }
 
-// NewRepo согласно конфигу определяет тип хранилища
+// NewRepo defines the storage type according to the config
 func NewRepo(cfg *config.Config) (Storage, error) {
 	switch {
 	case cfg.DatabasePath != "":
