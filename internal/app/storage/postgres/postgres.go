@@ -1,3 +1,4 @@
+// package postgres реализация интерфейса Storage для записи в файл
 package postgres
 
 import (
@@ -11,14 +12,15 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
-var (
-	ErrURLExists = errors.New("url exists")
-)
+// ErrURLExists возращаемая если ссылка уже сохранена в хранилище
+var ErrURLExists = errors.New("url exists")
 
+// storage хранилище ссылок
 type storage struct {
 	db *sql.DB
 }
 
+// NewStorage создаёт хранилище storage
 func NewStorage(databaseDSN string) (*storage, error) {
 	const op = "storage.postgres.NewStorage"
 
@@ -47,6 +49,7 @@ func NewStorage(databaseDSN string) (*storage, error) {
 	}, nil
 }
 
+// SaveURL сохраняет ссылки в хранилище
 func (s *storage) SaveURL(longURL, shortURL, correlationID string, userID string) error {
 	const op = "storage.postgres.SaveURL"
 	var isDelete = false
@@ -65,6 +68,7 @@ func (s *storage) SaveURL(longURL, shortURL, correlationID string, userID string
 	return nil
 }
 
+// GetURL получает ссылку из хранилища
 func (s *storage) GetURL(shortURL, userID string) (bool, string, error) {
 	const op = "storage.postgres.GetURL"
 	var longURL string
@@ -77,11 +81,13 @@ func (s *storage) GetURL(shortURL, userID string) (bool, string, error) {
 	return isDelete, longURL, nil
 }
 
+// Ping() проверяет подключение к базе данных
 func (s *storage) Ping() (*sql.DB, error) {
 	err := s.db.Ping()
 	return s.db, err
 }
 
+// BatchInsertURL реализует batch запись скоращённых ссылок в хранилище
 func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error {
 	const op = "storage.postgres.BatchInsertURL"
 	var isDelete = false
@@ -107,14 +113,15 @@ func (s *storage) BatchInsertURL(urls []models.BatchDatabaseResponse, userID str
 	return nil
 }
 
+// GetShortURL получает короткую ссылку из хранилища
 func (s *storage) GetShortURL(longURL string) string {
-	const op = "storage.postgres.GetURL"
 	var shortURL string
 	row := s.db.QueryRow("SELECT short_url FROM urls WHERE long_url = $1", longURL)
 	row.Scan(&shortURL)
 	return shortURL
 }
 
+// GetUserURLs возвращает ссылки которые сохранял определённый пользователь
 func (s *storage) GetUserURLs(userID string) ([]models.UserURLs, error) {
 	// const op = "storage.postgres.GetUserURLs"
 	// rows, err := s.db.Query("SELECT long_url, short_url FROM urls WHERE user_id = $1", userID)
@@ -143,6 +150,7 @@ func (s *storage) GetUserURLs(userID string) ([]models.UserURLs, error) {
 	return urls, nil
 }
 
+// SetDeleteFlag реализует логику удаления ссылок из хранилища
 func (s *storage) SetDeleteFlag(IDs []string, userID string) error {
 	const op = "storage.postgres.SetDeleteFlag"
 	query := `
@@ -154,4 +162,16 @@ func (s *storage) SetDeleteFlag(IDs []string, userID string) error {
 		return fmt.Errorf("%s: %s", op, err)
 	}
 	return nil
+}
+
+// GetStats получаем кол-во юзеров и коротких ссылок в бд
+func (s *storage) GetStats() (int, int, error) {
+	const op = "storage.postgres.GetStats"
+	statsQuery := "SELECT COUNT(short_url) AS short_url_count, COUNT(DISTINCT user_id) AS user_id_count FROM urls"
+	var shortURLcount, userIDcount int
+	err := s.db.QueryRow(statsQuery).Scan(&shortURLcount, &userIDcount)
+	if err != nil {
+		return 0, 0, fmt.Errorf("%s: %s", op, err)
+	}
+	return shortURLcount, userIDcount, nil
 }

@@ -1,37 +1,63 @@
+// package models contains data structure models
 package models
 
-type Request struct {
-	URL string `json:"url"`
-}
-
-type Response struct {
-	ShortURL string `json:"result"`
-}
-
-type FileStorage struct {
-	UUID        int    `json:"uuid"`
-	ShortURL    string `json:"short_url"`
-	OriginalURL string `json:"original_url"`
-}
-
-type BatchDatabaseResponse struct {
-	ShortURL      string
-	OriginalURL   string
-	CorrelationID string
-	UserID        string
-}
-
-type BatchRequest struct {
-	CorrelationID string `json:"correlation_id"`
-	OriginalURL   string `json:"original_url"`
-}
-
-type BatchResponse struct {
-	CorrelationID string `json:"correlation_id"`
-	ShortURL      string `json:"short_url"`
-}
-
-type UserURLs struct {
-	OriginalURL string `json:"original_url"`
-	ShortURL    string `json:"short_url"`
-}
+// models of structures
+type (
+	// Request is needed for json reading of body
+	Request struct {
+		// accepts LongURL
+		URL string `json:"url"`
+	}
+	// Response is needed for a json response
+	Response struct {
+		// accepts shortURL
+		ShortURL string `json:"result"`
+	}
+	// FileStorage is needed to write to a json file
+	FileStorage struct {
+		// unique request id
+		UUID     int    `json:"uuid"`
+		ShortURL string `json:"short_url"`
+		// accepts LongURL
+		OriginalURL string `json:"original_url"`
+	}
+	// BatchDatabaseResponse is needed for the server's batch response
+	BatchDatabaseResponse struct {
+		// accepts shortURL
+		ShortURL string
+		// accepts LongURL
+		OriginalURL string
+		// stores a unique ID
+		CorrelationID string
+		// user id
+		UserID string
+	}
+	// Batch Request is needed for json reading of body
+	BatchRequest struct {
+		// stores a unique ID
+		CorrelationID string `json:"correlation_id"`
+		// accepts LongURL
+		OriginalURL string `json:"original_url"`
+	}
+	// BatchResponse is needed for json response
+	BatchResponse struct {
+		// stores a unique ID
+		CorrelationID string `json:"correlation_id"`
+		// accepts shortURL
+		ShortURL string `json:"short_url"`
+	}
+	// UserURLs
+	UserURLs struct {
+		// accepts LongURL
+		OriginalURL string `json:"original_url"`
+		// accepts shortURL
+		ShortURL string `json:"short_url"`
+	}
+	// Stats
+	Stasts struct {
+		// number of shortener URLs in the service
+		URLs int `json:"urls"`
+		// number of users in the service
+		UserIDs int `json:"users"`
+	}
+)

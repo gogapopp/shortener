@@ -1,3 +1,4 @@
+// package storage contains a description of storage methods
 package storage
 
 import (
@@ -10,16 +11,21 @@ import (
 	"github.com/gogapopp/shortener/internal/app/storage/postgres"
 )
 
+// Storage defines storage storage methods
+//
+//go:generate mockgen -source=storage.go -destination=storagemocks/mock.go
 type Storage interface {
 	BatchInsertURL(urls []models.BatchDatabaseResponse, userID string) error
 	SaveURL(longURL, shortURL, correlationID string, userID string) error
-	GetUserURLs(userID string) ([]models.UserURLs, error)
 	GetURL(shortURL, userID string) (bool, string, error)
-	GetShortURL(longURL string) string
-	Ping() (*sql.DB, error)
+	GetUserURLs(userID string) ([]models.UserURLs, error)
 	SetDeleteFlag(IDs []string, userID string) error
+	GetShortURL(longURL string) string
+	GetStats() (int, int, error)
+	Ping() (*sql.DB, error)
 }
 
+// NewRepo defines the storage type according to the config
 func NewRepo(cfg *config.Config) (Storage, error) {
 	switch {
 	case cfg.DatabasePath != "":
